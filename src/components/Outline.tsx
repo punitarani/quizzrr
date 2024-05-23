@@ -1,9 +1,8 @@
-// src/components/Outline.tsx
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Progress } from "~/components/ui/progress";
 
 interface OutlineProps {
   summary: string | null;
@@ -12,8 +11,27 @@ interface OutlineProps {
 }
 
 const Outline: React.FC<OutlineProps> = ({ summary, isLoading, error }) => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (isLoading) {
+      const interval = setInterval(() => {
+        setProgress((prev) => prev + (100 - prev) * 0.05);
+      }, 10);
+      return () => clearInterval(interval);
+    }
+  }, [isLoading]);
+
   if (isLoading) {
-    return <div className="text-gray-500">Loading...</div>;
+    return (
+      <div className="mb-4 rounded-lg border border-gray-300 bg-white p-6">
+        <Progress
+          value={progress}
+          className="w-[60%] transition-all duration-1000 ease-out"
+        />
+        <p className="mt-2 text-gray-500">Generating Quiz Outline...</p>
+      </div>
+    );
   }
 
   if (error) {
