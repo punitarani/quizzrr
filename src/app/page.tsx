@@ -3,11 +3,12 @@
 import React, { useState } from "react";
 import { Input } from "~/components/ui/input";
 import { GetOutline } from "~/app/_components/get-outline";
+import { useQuizContext } from "~/context/QuizContext";
 
 const Page: React.FC = () => {
-  const [topic, setTopic] = useState<string>("");
-  const [showOutline, setShowOutline] = useState<boolean>(false);
+  const { topic, setTopic, outline, setOutline } = useQuizContext();
   const [isDisabled, setIsDisabled] = useState<boolean>(false);
+  const [showOutline, setShowOutline] = useState<boolean>(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -20,6 +20,8 @@ export const metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
+import { QuizProvider } from "~/context/QuizContext";
+
 export default function RootLayout({
   children,
 }: {
@@ -33,7 +35,9 @@ export default function RootLayout({
           fontSans.variable,
         )}
       >
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <QuizProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </QuizProvider>
       </body>
     </html>
   );
