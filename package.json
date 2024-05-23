@@ -11,6 +11,8 @@
     "prettier": "prettier --write ."
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^0.0.14",
+    "@ai-sdk/openai": "^0.0.13",
     "@hookform/resolvers": "^3.4.2",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
