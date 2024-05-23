@@ -13,8 +13,8 @@ async function generateOutline(topic: string) {
     system:
       "Generate a clear and concise outline for the given topic. " +
       "It needs to only include the main topics without subtopics in logical order. " +
-      "Do not include any examples, explanations, or other details. " +
-      "Generate the response in pretty and simple markdown format without a title and using bullet points.",
+      "Do not include any examples, explanations, title, and other details. " +
+      "Generate the response in pretty and simple markdown format using bullet points.",
     prompt: topic,
   });
   console.log(`Generated outline for ${topic}: ${text}`);

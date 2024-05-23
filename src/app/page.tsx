@@ -1,16 +1,35 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import { Input } from "~/components/ui/input";
+import { GetOutline } from "~/app/_components/get-outline";
 
 const Page: React.FC = () => {
+  const [topic, setTopic] = useState<string>("");
+  const [showOutline, setShowOutline] = useState<boolean>(false);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowOutline(true);
+    setIsDisabled(true);
+  };
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-start pt-20">
-      <form className="w-full max-w-sm">
+    <div className="flex min-h-screen flex-col items-center justify-start pt-20 px-5 md:px-20">
+      <form className="w-full max-w-xl lg:max-w-3xl" onSubmit={handleSubmit}>
         <Input
           type="text"
           placeholder="Get quizzed on..."
-          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-300 focus:outline-none focus:ring"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-300 focus:outline-none focus:ring"
+          disabled={isDisabled}
         />
       </form>
+      <div className="mt-4 w-full max-w-xl lg:max-w-3xl">
+        {showOutline && <GetOutline topic={topic} />}
+      </div>
     </div>
   );
 };
