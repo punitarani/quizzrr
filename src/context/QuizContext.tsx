@@ -10,8 +10,8 @@ interface QuizContextProps {
   setSubject: (subject: string) => void;
   level: string;
   setLevel: (level: string) => void;
-  length: number;
-  setLength: (length: number) => void;
+  length: string;
+  setLength: (length: string) => void;
   outline: string | null;
   setOutline: (outline: string | null) => void;
 }
@@ -24,7 +24,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({
   const [topic, setTopic] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
   const [level, setLevel] = useState<string>("");
-  const [length, setLength] = useState<number>(0);
+  const [length, setLength] = useState<string>("");
   const [outline, setOutline] = useState<string | null>(null);
 
   return (
