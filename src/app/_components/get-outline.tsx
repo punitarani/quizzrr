@@ -21,13 +21,5 @@ export const GetOutline: React.FC<GetOutlineProps> = ({ topic }) => {
     }
   }, [data]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error loading outline</div>;
-  }
-
-  return <Outline summary={summary} />;
+  return <Outline summary={summary} isLoading={isLoading} error={!!error} />;
 };

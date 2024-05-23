@@ -16,7 +16,7 @@ const Page: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-start pt-20 px-5 md:px-20">
+    <div className="flex min-h-screen flex-col items-center justify-start px-5 pt-20 md:px-20">
       <form className="w-full max-w-xl lg:max-w-3xl" onSubmit={handleSubmit}>
         <Input
           type="text"
