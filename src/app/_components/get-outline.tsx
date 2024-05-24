@@ -8,19 +8,19 @@ import QuizOutline from "~/components/QuizOutline";
 
 interface GetOutlineProps {
   topic: string;
-  content: string;
   subject: string;
   level: string;
   length: string;
+  content: string;
   onComplete?: (outline: string) => void;
 }
 
 export const GetOutline: React.FC<GetOutlineProps> = ({
   topic,
-  content,
   subject,
   level,
   length,
+  content,
   onComplete,
 }) => {
   const [outline, setOutline] = useState<string | null>(null);

@@ -57,10 +57,10 @@ const Page: React.FC = () => {
         {showOutline && contentSummary != null && (
           <GetOutline
             topic={topic}
-            content={contentSummary}
             subject={subject}
             level={level}
             length={length}
+            content={contentSummary}
           />
         )}
       </div>
