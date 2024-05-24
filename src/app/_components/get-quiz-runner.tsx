@@ -1,5 +1,6 @@
 // src/app/_components/get-quiz-runner.tsx "use client";
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useRef, useState } from "react";
 import { GenerateQuestion } from "~/app/_components/generate-question";
 
 interface GetQuizRunnerProps {
@@ -14,8 +15,7 @@ interface GetQuizRunnerProps {
 
 interface Question {
   id: number;
-  question: string;
-  answer: string;
+  question: React.ReactNode;
 }
 
 export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
@@ -26,68 +26,66 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
   outline,
   onComplete,
 }) => {
+  const isInitialMount = useRef(true);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [score, setScore] = useState<number>(0);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const [questionIndex, setQuestionIndex] = useState<number>(0);
 
+  // Generate the first question on initial mount
   useEffect(() => {
-    generateQuestion(0); // Generate the first question
-  }, []);
+    if (isInitialMount.current) {
+      generateQuestion();
+      isInitialMount.current = false;
+    }
+  });
 
-  const generateQuestion = (index: number) => {
+  // Generate a new question when the question index changes
+  useEffect(() => {
+    if (!quizCompleted && questionIndex < 10 && questionIndex > 0) {
+      generateQuestion();
+    }
+  }, [questionIndex]);
+
+  // Handle the submission of an answer
+  function handleAnswerSubmit(correct: boolean) {
+    if (correct) {
+      setScore((prevScore) => prevScore + 1);
+    }
+
+    setQuestionIndex((prevIndex) => {
+      const nextIndex = prevIndex + 1;
+      if (nextIndex >= 10) {
+        setQuizCompleted(true);
+        if (onComplete) {
+          onComplete(score);
+        }
+      }
+      return nextIndex;
+    });
+  }
+
+  const generateQuestion = () => {
     const newQuestion: Question = {
-      id: index,
-      question: `Question ${index + 1}`,
-      answer: `Answer ${index + 1}`,
+      id: questionIndex,
+      question: (
+        <GenerateQuestion
+          topic={topic}
+          subject={subject}
+          level={level}
+          content={content}
+          outline={outline}
+          onComplete={handleAnswerSubmit}
+        />
+      ),
     };
     setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
   };
 
-  const handleAnswerSubmit = (questionId: number, answer: string) => {
-    const updatedAnswers = [...userAnswers];
-    updatedAnswers[questionId] = answer;
-    setUserAnswers(updatedAnswers);
-
-    const question = questions.find((q) => q.id === questionId);
-    if (question && answer === question.answer) {
-      setScore((prevScore) => prevScore + 1);
-    }
-
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      setQuizCompleted(true);
-      if (onComplete) {
-        onComplete(score);
-      }
-    }
-
-    // Generate the next question if there are more questions
-    if (currentQuestionIndex < 9) {
-      generateQuestion(currentQuestionIndex + 1);
-    }
-  };
-
   return (
     <div className="my-4 flex flex-col space-y-4">
-      {questions.map((question, index) => (
-        <div key={question.id}>
-          {index <= currentQuestionIndex && (
-            <GenerateQuestion
-              key={question.id}
-              topic={topic}
-              subject={subject}
-              level={level}
-              content={content}
-              outline={outline}
-              onComplete={(correct) =>
-                handleAnswerSubmit(question.id, correct ? question.answer : "")
-              }
-            />
-          )}
-        </div>
+      {questions.map((question) => (
+        <div key={question.id}>{question.question}</div>
       ))}
       {quizCompleted && (
         <div
