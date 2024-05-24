@@ -41,7 +41,7 @@ const QuizContentSummary: React.FC<QuizContentSummaryProps> = ({
   }
 
   if (error) {
-    console.error("Error generating quiz outline");
+    console.error("Error generating quiz content summary");
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />

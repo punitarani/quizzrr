@@ -21,11 +21,13 @@ export const GetSummary: React.FC<GetOutlineProps> = ({
 }) => {
   const [summary, setSummary] = useState<string | null>(null);
 
-  const { data, error, isLoading } = api.quiz.outline.useQuery({ topic });
+  const { data, error, isLoading } = api.quiz.content.useQuery({
+    topic,
+  });
 
   useEffect(() => {
     if (data) {
-      setSummary(data.outline);
+      setSummary(data.content);
     }
   }, [data]);
 
