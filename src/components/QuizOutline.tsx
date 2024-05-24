@@ -34,13 +34,20 @@ const QuizOutline: React.FC<QuizOutlineProps> = ({
 
   if (isLoading) {
     return (
-      <div className="mb-4 rounded-lg border border-gray-300 bg-white p-6">
-        <Progress
-          value={progress}
-          className="w-[60%] transition-all duration-1000 ease-out"
-        />
-        <p className="mt-2 text-gray-500">Generating Quiz Outline...</p>
-      </div>
+      <Accordion type="single" defaultValue="item-1" collapsible>
+        <AccordionItem value="item-1">
+          <AccordionTrigger>
+            <h2 className="text-xl font-semibold">Loading Quiz Outline</h2>
+          </AccordionTrigger>
+          <AccordionContent>
+            <Progress
+              value={progress}
+              className="w-full transition-all duration-1000 ease-out"
+            />
+            <p className="mt-2 text-gray-500">Generating Quiz Outline...</p>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     );
   }
 
