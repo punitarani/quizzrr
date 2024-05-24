@@ -1,16 +1,22 @@
+// src/components/QuizContentSummary.tsx
+
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Progress } from "~/components/ui/progress";
 
-interface OutlineProps {
+interface QuizContentSummaryProps {
   summary: string | null;
   isLoading: boolean;
   error: boolean;
 }
 
-const Outline: React.FC<OutlineProps> = ({ summary, isLoading, error }) => {
+const QuizContentSummary: React.FC<QuizContentSummaryProps> = ({
+  summary,
+  isLoading,
+  error,
+}) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -49,7 +55,7 @@ const Outline: React.FC<OutlineProps> = ({ summary, isLoading, error }) => {
 
   return (
     <div className="mb-4 rounded-lg border border-gray-300 bg-white p-6">
-      <h2 className="mb-4 text-xl font-semibold">Quiz Outline</h2>
+      <h2 className="mb-4 text-xl font-semibold">Content Summary</h2>
       {summary ? (
         <ReactMarkdown className="prose">{summary}</ReactMarkdown>
       ) : (
@@ -59,4 +65,4 @@ const Outline: React.FC<OutlineProps> = ({ summary, isLoading, error }) => {
   );
 };
 
-export default Outline;
+export default QuizContentSummary;

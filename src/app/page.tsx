@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { GetOutline } from "~/app/_components/get-outline";
+import { GetSummary } from "~/app/_components/get-summary";
 import { useQuizContext } from "~/context/QuizContext";
 import QuizInputForm from "~/components/QuizInputForm";
 
@@ -38,7 +38,7 @@ const Page: React.FC = () => {
       <QuizInputForm onSubmit={handleFormSubmit} isDisabled={isDisabled} />
       <div className="mt-4 w-full max-w-xl lg:max-w-3xl">
         {showOutline && (
-          <GetOutline
+          <GetSummary
             topic={topic}
             subject={subject}
             level={level}

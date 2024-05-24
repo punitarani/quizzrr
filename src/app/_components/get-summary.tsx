@@ -1,10 +1,10 @@
-// src/app/_components/get-outline.tsx
+// src/app/_components/get-summary.tsx
 
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
-import Outline from "~/components/Outline";
+import QuizContentSummary from "~/components/QuizContentSummary";
 
 interface GetOutlineProps {
   topic: string;
@@ -13,7 +13,7 @@ interface GetOutlineProps {
   length: string;
 }
 
-export const GetOutline: React.FC<GetOutlineProps> = ({
+export const GetSummary: React.FC<GetOutlineProps> = ({
   topic,
   subject,
   level,
@@ -29,5 +29,11 @@ export const GetOutline: React.FC<GetOutlineProps> = ({
     }
   }, [data]);
 
-  return <Outline summary={summary} isLoading={isLoading} error={!!error} />;
+  return (
+    <QuizContentSummary
+      summary={summary}
+      isLoading={isLoading}
+      error={!!error}
+    />
+  );
 };
