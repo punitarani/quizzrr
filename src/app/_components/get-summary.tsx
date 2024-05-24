@@ -11,6 +11,7 @@ interface GetOutlineProps {
   subject: string;
   level: string;
   length: string;
+  onComplete?: (content: string) => void;
 }
 
 export const GetSummary: React.FC<GetOutlineProps> = ({
@@ -18,6 +19,7 @@ export const GetSummary: React.FC<GetOutlineProps> = ({
   subject,
   level,
   length,
+  onComplete,
 }) => {
   const [summary, setSummary] = useState<string | null>(null);
 
@@ -28,8 +30,11 @@ export const GetSummary: React.FC<GetOutlineProps> = ({
   useEffect(() => {
     if (data) {
       setSummary(data.content);
+      if (onComplete) {
+        onComplete(data.content);
+      }
     }
-  }, [data]);
+  }, [data, onComplete]);
 
   return (
     <QuizContentSummary

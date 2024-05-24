@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { GetSummary } from "~/app/_components/get-summary";
+import { GetOutline } from "~/app/_components/get-outline";
 import { useQuizContext } from "~/context/QuizContext";
 import QuizInputForm from "~/components/QuizInputForm";
 
@@ -16,8 +17,15 @@ const Page: React.FC = () => {
     length,
     setLength,
   } = useQuizContext();
-  const [showSummary, setShowOutline] = useState<boolean>(false);
+  const [contentSummary, setContentSummary] = useState<string | null>(null);
+  const [showSummary, setshowSummary] = useState<boolean>(false);
+  const [showOutline, setShowOutline] = useState<boolean>(false);
   const [isDisabled, setIsDisabled] = useState<boolean>(false);
+
+  const handleSummaryComplete = (content: string) => {
+    setContentSummary(content);
+    setShowOutline(true);
+  };
 
   const handleFormSubmit = (data: {
     topic: string;
@@ -29,7 +37,7 @@ const Page: React.FC = () => {
     setSubject(data.subject);
     setLevel(data.level);
     setLength(data.length);
-    setShowOutline(true);
+    setshowSummary(true);
     setIsDisabled(true);
   };
 
@@ -40,6 +48,16 @@ const Page: React.FC = () => {
         {showSummary && (
           <GetSummary
             topic={topic}
+            subject={subject}
+            level={level}
+            length={length}
+            onComplete={handleSummaryComplete}
+          />
+        )}
+        {showOutline && contentSummary != null && (
+          <GetOutline
+            topic={topic}
+            content={contentSummary}
             subject={subject}
             level={level}
             length={length}
