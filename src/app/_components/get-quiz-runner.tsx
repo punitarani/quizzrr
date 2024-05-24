@@ -1,6 +1,6 @@
 // src/app/_components/get-quiz-runner.tsx "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GenerateQuestion } from "~/app/_components/generate-question";
 
 interface GetQuizRunnerProps {
@@ -32,40 +32,29 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
   const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
   const [questionIndex, setQuestionIndex] = useState<number>(0);
 
-  // Generate the first question on initial mount
-  useEffect(() => {
-    if (isInitialMount.current) {
-      generateQuestion();
-      isInitialMount.current = false;
-    }
-  });
-
-  // Generate a new question when the question index changes
-  useEffect(() => {
-    if (!quizCompleted && questionIndex < 10 && questionIndex > 0) {
-      generateQuestion();
-    }
-  }, [questionIndex]);
-
   // Handle the submission of an answer
-  function handleAnswerSubmit(correct: boolean) {
-    if (correct) {
-      setScore((prevScore) => prevScore + 1);
-    }
-
-    setQuestionIndex((prevIndex) => {
-      const nextIndex = prevIndex + 1;
-      if (nextIndex >= 10) {
-        setQuizCompleted(true);
-        if (onComplete) {
-          onComplete(score);
-        }
+  const handleAnswerSubmit = useCallback(
+    (correct: boolean) => {
+      if (correct) {
+        setScore((prevScore) => prevScore + 1);
       }
-      return nextIndex;
-    });
-  }
 
-  const generateQuestion = () => {
+      setQuestionIndex((prevIndex) => {
+        const nextIndex = prevIndex + 1;
+        if (nextIndex >= 10) {
+          setQuizCompleted(true);
+          if (onComplete) {
+            onComplete(score);
+          }
+        }
+        return nextIndex;
+      });
+    },
+    [onComplete, score],
+  );
+
+  // Generate a new question
+  const generateQuestion = useCallback(() => {
     const newQuestion: Question = {
       id: questionIndex,
       question: (
@@ -80,7 +69,30 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
       ),
     };
     setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
-  };
+  }, [
+    questionIndex,
+    topic,
+    subject,
+    level,
+    content,
+    outline,
+    handleAnswerSubmit,
+  ]);
+
+  // Generate the first question on initial mount
+  useEffect(() => {
+    if (isInitialMount.current) {
+      generateQuestion();
+      isInitialMount.current = false;
+    }
+  });
+
+  // Generate a new question when the question index changes
+  useEffect(() => {
+    if (!quizCompleted && questionIndex < 10 && questionIndex > 0) {
+      generateQuestion();
+    }
+  }, [generateQuestion, questionIndex, quizCompleted]);
 
   return (
     <div className="my-4 flex flex-col space-y-4">
