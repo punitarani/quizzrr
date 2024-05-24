@@ -16,7 +16,7 @@ const Page: React.FC = () => {
     length,
     setLength,
   } = useQuizContext();
-  const [showOutline, setShowOutline] = useState<boolean>(false);
+  const [showSummary, setShowOutline] = useState<boolean>(false);
   const [isDisabled, setIsDisabled] = useState<boolean>(false);
 
   const handleFormSubmit = (data: {
@@ -37,7 +37,7 @@ const Page: React.FC = () => {
     <div className="flex min-h-screen flex-col items-center justify-start px-5 pt-20 md:px-20">
       <QuizInputForm onSubmit={handleFormSubmit} isDisabled={isDisabled} />
       <div className="mt-4 w-full max-w-xl lg:max-w-3xl">
-        {showOutline && (
+        {showSummary && (
           <GetSummary
             topic={topic}
             subject={subject}

@@ -1,7 +1,8 @@
 // src/context/QuizContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
 
 interface QuizContextProps {
   topic: string;
@@ -12,8 +13,8 @@ interface QuizContextProps {
   setLevel: (level: string) => void;
   length: string;
   setLength: (length: string) => void;
-  outline: string | null;
-  setOutline: (outline: string | null) => void;
+  contentSummary: string | null;
+  setContentSummary: (outline: string | null) => void;
 }
 
 const QuizContext = createContext<QuizContextProps | undefined>(undefined);
@@ -25,7 +26,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({
   const [subject, setSubject] = useState<string>("");
   const [level, setLevel] = useState<string>("");
   const [length, setLength] = useState<string>("");
-  const [outline, setOutline] = useState<string | null>(null);
+  const [contentSummary, setContentSummary] = useState<string | null>(null);
 
   return (
     <QuizContext.Provider
@@ -38,8 +39,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({
         setLevel,
         length,
         setLength,
-        outline,
-        setOutline,
+        contentSummary: contentSummary,
+        setContentSummary: setContentSummary,
       }}
     >
       {children}
