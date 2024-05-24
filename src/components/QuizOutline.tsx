@@ -1,10 +1,14 @@
-//
-
 import React, { useEffect, useState } from "react";
 import { Progress } from "~/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
 
 interface QuizOutlineProps {
   outline: string | null;
@@ -54,14 +58,20 @@ const QuizOutline: React.FC<QuizOutlineProps> = ({
   }
 
   return (
-    <div className="mb-4 rounded-lg border border-gray-300 bg-white p-6">
-      <h2 className="mb-4 text-xl font-semibold">Quiz Outline</h2>
-      {outline ? (
-        <ReactMarkdown className="prose">{outline}</ReactMarkdown>
-      ) : (
-        <div className="text-gray-500">No outline available</div>
-      )}
-    </div>
+    <Accordion type="single" defaultValue="item-1" collapsible>
+      <AccordionItem value="item-1">
+        <AccordionTrigger>
+          <h2 className="text-xl font-semibold">Quiz Outline</h2>
+        </AccordionTrigger>
+        <AccordionContent>
+          {outline ? (
+            <ReactMarkdown className="prose">{outline}</ReactMarkdown>
+          ) : (
+            <div className="text-gray-500">No outline available</div>
+          )}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 };
 
