@@ -151,7 +151,7 @@ export const quizRouter = createTRPCRouter({
         answer: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       const { topic, subject, content, question, description, answer } = input;
       return await validateAnswer(
         topic,
