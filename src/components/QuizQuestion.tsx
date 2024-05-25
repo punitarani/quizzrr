@@ -3,16 +3,15 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
+import type { QuizAnswerData, QuizQuestionUserAnswerData } from "~/types";
 
 interface QuizQuestionProps {
   question: string;
   description: string;
   isValidating: boolean;
-  validation?: {
-    correct: boolean;
-    feedback: string;
-  };
+  validation?: QuizAnswerData | null;
   onSubmit: (question: string, answer: string, description: string) => void;
+  onAnswer: (answer: QuizQuestionUserAnswerData) => void;
 }
 
 const QuizQuestion: React.FC<QuizQuestionProps> = ({
@@ -21,6 +20,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   isValidating,
   validation,
   onSubmit,
+  onAnswer,
 }) => {
   const [answer, setUserAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -55,11 +55,41 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   );
 
   useEffect((): void => {
+    console.log(
+      "submitted",
+      submitted,
+      "isValidating",
+      isValidating,
+      "validation",
+      validation,
+    );
     if (submitted && !isValidating && validation) {
-      setCorrect(validation.correct);
+      setCorrect(validation.isCorrect);
       setExplanation(validation.feedback);
     }
   }, [submitted, isValidating, validation]);
+
+  useEffect((): void => {
+    console.log("submitted", submitted, "correct", correct);
+    if (submitted && correct !== null) {
+      onAnswer({
+        question: question,
+        description: description,
+        userAnswer: answer,
+        isCorrect: correct,
+        correctAnswer: explanation,
+        feedback: explanation,
+      });
+    }
+  }, [
+    answer,
+    correct,
+    description,
+    explanation,
+    onAnswer,
+    question,
+    submitted,
+  ]);
 
   return (
     <div className="rounded-md border p-4">

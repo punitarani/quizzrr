@@ -6,6 +6,16 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 import { llama3_70b } from "~/lib/llm";
+import {
+  type QuizAnswerData,
+  type QuizInfoData,
+  type QuizQuestionData,
+  type QuizQuestionUserAnswerData,
+  QuizAnswerSchema,
+  QuizInfoSchema,
+  QuizQuestionSchema,
+  QuizQuestionUserAnswerSchema,
+} from "~/types";
 
 async function generateContentSummary(topic: string) {
   const { text } = await generateText({
@@ -22,12 +32,10 @@ async function generateContentSummary(topic: string) {
 }
 
 async function generateQuizOutline(
-  topic: string,
-  outline: string,
-  subject: string,
-  level: string,
-) {
-  const prompt = `Topic: ${topic}\nSubject: ${subject}\nLevel: ${level}\n\nContent Summary:\n${outline}`;
+  data: QuizInfoData,
+  summary: string,
+): Promise<string> {
+  const prompt = `Topic: ${data.topic}\nSubject: ${data.subject}\nLevel: ${data.level}\n\nContent Summary:\n${summary}`;
 
   const { text } = await generateText({
     model: llama3_70b,
@@ -41,17 +49,16 @@ async function generateQuizOutline(
       "Generate the response in markdown format using bullet points.",
     prompt: prompt,
   });
+
   return text;
 }
 
 async function generateQuestion(
-  topic: string,
-  subject: string,
-  level: string,
+  info: QuizInfoData,
   content: string,
   outline: string,
-  history: { question: string; description: string; correct: boolean }[],
-): Promise<{ question: string; description: string; difficulty: string }> {
+  history: QuizQuestionUserAnswerData[],
+): Promise<QuizQuestionData> {
   return {
     question: "Guess 0 or 1",
     description: "50% chance of getting it right",
@@ -60,26 +67,19 @@ async function generateQuestion(
 }
 
 async function validateAnswer(
-  topic: string,
-  subject: string,
+  info: QuizInfoData,
   content: string,
-  question: string,
-  description: string,
+  question: QuizQuestionData,
   answer: string,
-): Promise<{
-  user: string;
-  correct: boolean;
-  answer: string;
-  feedback: string;
-}> {
+): Promise<QuizAnswerData> {
   const correctAnswer = Math.round(Math.random()).toString();
   const isCorrect = answer == correctAnswer;
   const feedback = `The correct answer is ${correctAnswer}.`;
 
   return {
-    user: answer,
-    correct: isCorrect,
-    answer: correctAnswer,
+    userAnswer: answer,
+    correctAnswer: correctAnswer,
+    isCorrect: isCorrect,
     feedback: feedback,
   };
 }
@@ -95,18 +95,14 @@ export const quizRouter = createTRPCRouter({
   outline: publicProcedure
     .input(
       z.object({
-        topic: z.string(),
-        content: z.string(),
-        subject: z.string(),
-        level: z.string(),
+        info: QuizInfoSchema,
+        summary: z.string(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input }): Promise<{ outline: string }> => {
       const outline = await generateQuizOutline(
-        input.topic,
-        input.content,
-        input.subject,
-        input.level,
+        QuizInfoSchema.parse(input.info),
+        input.summary,
       );
       return { outline: outline };
     }),
@@ -114,52 +110,48 @@ export const quizRouter = createTRPCRouter({
   generateQuestion: publicProcedure
     .input(
       z.object({
-        topic: z.string(),
-        subject: z.string(),
-        level: z.string(),
+        info: QuizInfoSchema,
         content: z.string(),
         outline: z.string(),
-        history: z.array(
-          z.object({
-            question: z.string(),
-            description: z.string(),
-            correct: z.boolean(),
-          }),
-        ),
+        history: z.array(QuizQuestionUserAnswerSchema),
       }),
     )
-    .query(async ({ input }) => {
-      const { topic, subject, level, content, outline, history } = input;
-      return await generateQuestion(
-        topic,
-        subject,
-        level,
+    .query(async ({ input }): Promise<QuizQuestionData> => {
+      const {
+        info,
         content,
         outline,
         history,
-      );
+      }: {
+        info: QuizInfoData;
+        content: string;
+        outline: string;
+        history: QuizQuestionUserAnswerData[];
+      } = input;
+      return await generateQuestion(info, content, outline, history);
     }),
 
   validateAnswer: publicProcedure
     .input(
       z.object({
-        topic: z.string(),
-        subject: z.string(),
+        info: QuizInfoSchema,
         content: z.string(),
-        question: z.string(),
-        description: z.string(),
+        question: QuizQuestionSchema,
         answer: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
-      const { topic, subject, content, question, description, answer } = input;
-      return await validateAnswer(
-        topic,
-        subject,
+      const {
+        info,
         content,
         question,
-        description,
         answer,
-      );
+      }: {
+        info: QuizInfoData;
+        content: string;
+        question: QuizQuestionData;
+        answer: string;
+      } = input;
+      return await validateAnswer(info, content, question, answer);
     }),
 });

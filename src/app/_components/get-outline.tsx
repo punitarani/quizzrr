@@ -26,10 +26,12 @@ export const GetOutline: React.FC<GetOutlineProps> = ({
   const [outline, setOutline] = useState<string | null>(null);
 
   const { data, error, isLoading } = api.quiz.outline.useQuery({
-    topic,
-    content,
-    subject,
-    level,
+    info: {
+      topic,
+      subject,
+      level,
+    },
+    summary: content,
   });
 
   useEffect(() => {

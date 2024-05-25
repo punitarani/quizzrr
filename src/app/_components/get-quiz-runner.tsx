@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GenerateQuestion } from "~/app/_components/generate-question";
+import { QuizQuestionData, QuizQuestionUserAnswerData } from "~/types";
 
 interface GetQuizRunnerProps {
   topic: string;
@@ -31,12 +32,14 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
   const [score, setScore] = useState<number>(0);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
   const [questionIndex, setQuestionIndex] = useState<number>(0);
+  const [qaData, setQAData] = useState<QuizQuestionUserAnswerData[]>([]);
 
   // Handle the submission of an answer
   const handleAnswerSubmit = useCallback(
-    (correct: boolean) => {
-      console.log(`Correct: ${correct}`);
-      if (correct) {
+    (answer: QuizQuestionUserAnswerData) => {
+      setQAData((prevData) => [...prevData, answer]);
+      console.log(`Correct: ${answer.isCorrect}`);
+      if (answer.isCorrect) {
         setScore((prevScore) => prevScore + 1);
       }
 
