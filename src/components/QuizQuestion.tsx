@@ -1,17 +1,17 @@
 //src/components/QuizQuestion.tsx
 
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 
 interface QuizQuestionProps {
   question: string;
-  description?: string;
+  description: string;
   onSubmit: (
     question: string,
     answer: string,
-    description?: string,
-  ) => [boolean, string];
+    description: string,
+  ) => Promise<[boolean, string]>;
 }
 
 const QuizQuestion: React.FC<QuizQuestionProps> = ({
@@ -24,28 +24,37 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   const [correct, setCorrect] = useState<boolean | null>(null);
   const [explanation, setExplanation] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!answer) {
-      return;
-    }
-    setSubmitted(true);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent): Promise<void> => {
+      e.preventDefault();
 
-    const validatedAnswer = onSubmit(question, answer, description);
-    setCorrect(validatedAnswer[0]);
-    setExplanation(validatedAnswer[1]);
-  };
+      if (!answer) {
+        return;
+      }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+      setSubmitted(true);
+
+      const validatedAnswer = await onSubmit(question, answer, description);
+      setCorrect(validatedAnswer[0]);
+      setExplanation(validatedAnswer[1]);
+    },
+    [answer, description, onSubmit, question],
+  );
+
+  const handleKeyDown = async (e: React.KeyboardEvent) => {
     if (e.ctrlKey && e.key === "Enter") {
-      handleSubmit(e as unknown as React.FormEvent);
+      void handleSubmit(e as unknown as React.FormEvent).then(() => {
+        // handle the result of handleSubmit here if needed
+      });
     }
   };
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "Enter") {
-        handleSubmit(e as unknown as React.FormEvent);
+        void handleSubmit(e as unknown as React.FormEvent).then(() => {
+          // handle the result of handleSubmit here if needed
+        });
       }
     };
 
@@ -53,7 +62,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
-  }, [answer]);
+  }, [answer, handleSubmit]);
 
   return (
     <div className="rounded-md border p-4">

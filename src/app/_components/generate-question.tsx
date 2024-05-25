@@ -1,9 +1,8 @@
-// src/app/_components/generate-question.tsx
-
 "use client";
 
 import React, { useEffect, useState } from "react";
 import QuizQuestion from "~/components/QuizQuestion";
+import { api } from "~/trpc/react";
 
 interface GetQuestionProps {
   topic: string;
@@ -24,17 +23,37 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
 }) => {
   const [question, setQuestion] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [difficulty, setDifficulty] = useState<string>("");
+
+  const { data: questionResponse } = api.quiz.generateQuestion.useQuery(
+    {
+      topic: topic,
+      subject: subject,
+      level: level,
+      content: content,
+      outline: outline,
+      history: [],
+    },
+    {
+      enabled: true,
+    },
+  );
 
   useEffect(() => {
-    setQuestion("Guess 0 or 1");
-    setDescription("50% chance of getting it right");
-  }, []);
+    if (questionResponse) {
+      setQuestion(questionResponse.question);
+      setDescription(questionResponse.description);
+      setDifficulty(questionResponse.difficulty);
+    } else {
+      // TODO: Handle error
+    }
+  }, [questionResponse]);
 
-  const onSubmit = (
+  const onSubmit = async (
     question: string,
     answer: string,
-    description?: string,
-  ): [boolean, string] => {
+    description: string,
+  ): Promise<[boolean, string]> => {
     const correctAnswer = Math.round(Math.random());
     const isCorrect = answer === correctAnswer.toString();
     const feedback = `The correct answer is ${correctAnswer}.`;
