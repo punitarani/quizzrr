@@ -124,9 +124,15 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
           }}
           onKeyDown={handleKeyDown}
         />
-        <Button type="submit" className="mt-2" disabled={!answer || submitted}>
-          Submit
-        </Button>
+        {(!submitted || (submitted && isValidating)) && (
+          <Button
+            type="submit"
+            className="mt-2"
+            disabled={!answer || submitted}
+          >
+            Submit
+          </Button>
+        )}
       </form>
       {submitted && correct !== null && explanation && (
         <div
