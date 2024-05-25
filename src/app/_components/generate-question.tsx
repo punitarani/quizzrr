@@ -1,6 +1,6 @@
 // src/app/_components/generate-question.tsx
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import QuizQuestion from "~/components/QuizQuestion";
 import { api } from "~/trpc/react";
 import type {

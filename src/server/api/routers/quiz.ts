@@ -11,7 +11,6 @@ import {
   type QuizInfoData,
   type QuizQuestionData,
   type QuizQuestionUserAnswerData,
-  QuizAnswerSchema,
   QuizInfoSchema,
   QuizQuestionSchema,
   QuizQuestionUserAnswerSchema,
@@ -84,6 +83,14 @@ async function validateAnswer(
   };
 }
 
+async function checkCompletion(
+  info: QuizInfoData,
+  summary: string,
+  history: QuizQuestionUserAnswerData[],
+): Promise<boolean> {
+  return Math.random() < 0.2;
+}
+
 export const quizRouter = createTRPCRouter({
   content: publicProcedure
     .input(z.object({ topic: z.string() }))
@@ -140,7 +147,7 @@ export const quizRouter = createTRPCRouter({
         answer: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input }): Promise<QuizAnswerData> => {
       const {
         info,
         content,
@@ -153,5 +160,26 @@ export const quizRouter = createTRPCRouter({
         answer: string;
       } = input;
       return await validateAnswer(info, content, question, answer);
+    }),
+
+  checkCompletion: publicProcedure
+    .input(
+      z.object({
+        info: QuizInfoSchema,
+        summary: z.string(),
+        history: z.array(QuizQuestionUserAnswerSchema),
+      }),
+    )
+    .mutation(async ({ input }): Promise<boolean> => {
+      const {
+        info,
+        summary,
+        history,
+      }: {
+        info: QuizInfoData;
+        summary: string;
+        history: QuizQuestionUserAnswerData[];
+      } = input;
+      return await checkCompletion(info, summary, history);
     }),
 });

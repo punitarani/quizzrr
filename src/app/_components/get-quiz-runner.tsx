@@ -2,7 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GenerateQuestion } from "~/app/_components/generate-question";
-import { QuizQuestionData, QuizQuestionUserAnswerData } from "~/types";
+import { api } from "~/trpc/react";
+import { QuizQuestionUserAnswerData } from "~/types";
 
 interface GetQuizRunnerProps {
   topic: string;
@@ -34,24 +35,47 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
   const [questionIndex, setQuestionIndex] = useState<number>(0);
   const [qaData, setQAData] = useState<QuizQuestionUserAnswerData[]>([]);
 
+  // Handle the completion of the quiz
+  const { mutate: checkCompletion } = api.quiz.checkCompletion.useMutation({
+    onSuccess: (data) => {
+      console.log("Quiz completion data", data);
+      if (data) {
+        setQuizCompleted(true);
+        if (onComplete) {
+          onComplete(score);
+        }
+      } else {
+        generateQuestion();
+      }
+    },
+    onError: (error) => {
+      console.error("Quiz completion error", error);
+    },
+  });
+
   // Handle the submission of an answer
   const handleAnswerSubmit = useCallback(
     (answer: QuizQuestionUserAnswerData) => {
       setQAData((prevData) => [...prevData, answer]);
+
       console.log(`Correct: ${answer.isCorrect}`);
       if (answer.isCorrect) {
         setScore((prevScore) => prevScore + 1);
       }
 
+      // Check if the quiz is completed
+      checkCompletion({
+        info: {
+          topic,
+          subject,
+          level,
+        },
+        summary: content,
+        history: qaData,
+      });
+
       setQuestionIndex((prevIndex) => {
-        const nextIndex = prevIndex + 1;
-        if (nextIndex >= 10) {
-          setQuizCompleted(true);
-          if (onComplete) {
-            onComplete(score);
-          }
-        }
-        return nextIndex;
+        return prevIndex + 1;
       });
     },
     [onComplete, score],
@@ -90,13 +114,6 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
       isInitialMount.current = false;
     }
   });
-
-  // Generate a new question when the question index changes
-  useEffect(() => {
-    if (!quizCompleted && questionIndex < 10 && questionIndex > 0) {
-      generateQuestion();
-    }
-  }, [generateQuestion, questionIndex, quizCompleted]);
 
   return (
     <div className="my-4 flex flex-col space-y-4">
