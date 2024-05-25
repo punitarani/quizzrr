@@ -44,6 +44,46 @@ async function generateQuizOutline(
   return text;
 }
 
+async function generateQuestion(
+  topic: string,
+  subject: string,
+  level: string,
+  content: string,
+  outline: string,
+  history: { question: string; description: string; correct: boolean }[],
+): Promise<{ question: string; description: string; difficulty: string }> {
+  return {
+    question: "Guess 0 or 1",
+    description: "50% chance of getting it right",
+    difficulty: "Medium",
+  };
+}
+
+async function validateAnswer(
+  topic: string,
+  subject: string,
+  content: string,
+  question: string,
+  description: string,
+  answer: string,
+): Promise<{
+  user: string;
+  correct: boolean;
+  answer: string;
+  feedback: string;
+}> {
+  const correctAnswer = Math.round(Math.random()).toString();
+  const isCorrect = answer == correctAnswer;
+  const feedback = `The correct answer is ${correctAnswer}.`;
+
+  return {
+    user: answer,
+    correct: isCorrect,
+    answer: correctAnswer,
+    feedback: feedback,
+  };
+}
+
 export const quizRouter = createTRPCRouter({
   content: publicProcedure
     .input(z.object({ topic: z.string() }))
@@ -69,5 +109,57 @@ export const quizRouter = createTRPCRouter({
         input.level,
       );
       return { outline: outline };
+    }),
+
+  generateQuestion: publicProcedure
+    .input(
+      z.object({
+        topic: z.string(),
+        subject: z.string(),
+        level: z.string(),
+        content: z.string(),
+        outline: z.string(),
+        history: z.array(
+          z.object({
+            question: z.string(),
+            description: z.string(),
+            correct: z.boolean(),
+          }),
+        ),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { topic, subject, level, content, outline, history } = input;
+      return await generateQuestion(
+        topic,
+        subject,
+        level,
+        content,
+        outline,
+        history,
+      );
+    }),
+
+  validateAnswer: publicProcedure
+    .input(
+      z.object({
+        topic: z.string(),
+        subject: z.string(),
+        content: z.string(),
+        question: z.string(),
+        description: z.string(),
+        answer: z.string(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { topic, subject, content, question, description, answer } = input;
+      return await validateAnswer(
+        topic,
+        subject,
+        content,
+        question,
+        description,
+        answer,
+      );
     }),
 });
