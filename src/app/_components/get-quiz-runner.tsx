@@ -35,6 +35,7 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
   // Handle the submission of an answer
   const handleAnswerSubmit = useCallback(
     (correct: boolean) => {
+      console.log(`Correct: ${correct}`);
       if (correct) {
         setScore((prevScore) => prevScore + 1);
       }

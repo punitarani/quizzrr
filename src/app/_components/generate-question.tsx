@@ -1,6 +1,6 @@
-"use client";
+// src/app/_components/generate-question.tsx
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import QuizQuestion from "~/components/QuizQuestion";
 import { api } from "~/trpc/react";
 
@@ -21,9 +21,14 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
   outline,
   onComplete,
 }) => {
+  const [submitted, setSubmitted] = useState<boolean>(false);
   const [question, setQuestion] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [difficulty, setDifficulty] = useState<string>("");
+  const [userAnswer, setUserAnswer] = useState<string>("");
+  const [correctAnswer, setCorrectAnswer] = useState<boolean | null>(null);
+  const [feedback, setFeedback] = useState<string>("");
+  const [validationComplete, setValidationComplete] = useState(false);
 
   const { data: questionResponse } = api.quiz.generateQuestion.useQuery(
     {
@@ -39,6 +44,21 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
     },
   );
 
+  const { mutate: validateAnswer } = api.quiz.validateAnswer.useMutation({
+    onSuccess: (data) => {
+      setCorrectAnswer(data.correct);
+      setFeedback(data.feedback);
+      setValidationComplete(true);
+      if (onComplete) {
+        onComplete(data.correct);
+      }
+    },
+    onError: (error) => {
+      console.error("Answer validation error", error);
+    },
+  });
+
+  // Set the question and description when the response is received
   useEffect(() => {
     if (questionResponse) {
       setQuestion(questionResponse.question);
@@ -49,26 +69,33 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
     }
   }, [questionResponse]);
 
-  const onSubmit = async (
-    question: string,
-    answer: string,
-    description: string,
-  ): Promise<[boolean, string]> => {
-    const correctAnswer = Math.round(Math.random());
-    const isCorrect = answer === correctAnswer.toString();
-    const feedback = `The correct answer is ${correctAnswer}.`;
-
-    if (onComplete) {
-      onComplete(isCorrect);
-    }
-
-    return [isCorrect, feedback];
-  };
+  // Handle the submission of an answer
+  const onSubmit = useCallback(
+    (question: string, answer: string, description: string): void => {
+      setSubmitted(true);
+      setUserAnswer(answer);
+      validateAnswer({
+        topic,
+        subject,
+        content,
+        question,
+        description,
+        answer,
+      });
+    },
+    [topic, subject, content, validateAnswer],
+  );
 
   return (
     <QuizQuestion
       question={question}
       description={description}
+      validation={
+        correctAnswer !== null
+          ? { correct: correctAnswer, feedback: feedback }
+          : undefined
+      }
+      isValidating={!validationComplete}
       onSubmit={onSubmit}
     />
   );
