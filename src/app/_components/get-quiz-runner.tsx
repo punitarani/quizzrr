@@ -3,13 +3,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GenerateQuestion } from "~/app/_components/generate-question";
 import { api } from "~/trpc/react";
-import { QuizQuestionUserAnswerData } from "~/types";
+import type { QuizInfoData, QuizQuestionUserAnswerData } from "~/types";
 
 interface GetQuizRunnerProps {
-  topic: string;
-  subject: string;
-  level: string;
-  length: string;
+  quizInfo: QuizInfoData;
   content: string;
   outline: string;
   onComplete?: (score: number) => void;
@@ -21,9 +18,7 @@ interface Question {
 }
 
 export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
-  topic,
-  subject,
-  level,
+  quizInfo,
   content,
   outline,
   onComplete,
@@ -65,11 +60,7 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
 
       // Check if the quiz is completed
       checkCompletion({
-        info: {
-          topic,
-          subject,
-          level,
-        },
+        info: quizInfo,
         summary: content,
         history: qaData,
       });
@@ -87,9 +78,7 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
       id: questionIndex,
       question: (
         <GenerateQuestion
-          topic={topic}
-          subject={subject}
-          level={level}
+          quizInfo={quizInfo}
           content={content}
           outline={outline}
           onComplete={handleAnswerSubmit}
@@ -97,15 +86,7 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
       ),
     };
     setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
-  }, [
-    questionIndex,
-    topic,
-    subject,
-    level,
-    content,
-    outline,
-    handleAnswerSubmit,
-  ]);
+  }, [content, outline, handleAnswerSubmit, questionIndex, quizInfo]);
 
   // Generate the first question on initial mount
   useEffect(() => {

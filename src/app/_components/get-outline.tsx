@@ -5,32 +5,23 @@
 import React, { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import QuizOutline from "~/components/QuizOutline";
+import type { QuizInfoData } from "~/types";
 
 interface GetOutlineProps {
-  topic: string;
-  subject: string;
-  level: string;
-  length: string;
+  quizInfo: QuizInfoData;
   content: string;
   onComplete?: (outline: string) => void;
 }
 
 export const GetOutline: React.FC<GetOutlineProps> = ({
-  topic,
-  subject,
-  level,
-  length,
+  quizInfo,
   content,
   onComplete,
 }) => {
   const [outline, setOutline] = useState<string | null>(null);
 
   const { data, error, isLoading } = api.quiz.outline.useQuery({
-    info: {
-      topic,
-      subject,
-      level,
-    },
+    info: quizInfo,
     summary: content,
   });
 

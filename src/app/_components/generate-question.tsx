@@ -4,24 +4,21 @@ import React, { useCallback, useEffect, useState } from "react";
 import QuizQuestion from "~/components/QuizQuestion";
 import { api } from "~/trpc/react";
 import type {
+  QuizInfoData,
   QuizAnswerData,
   QuizQuestionData,
   QuizQuestionUserAnswerData,
 } from "~/types";
 
 interface GetQuestionProps {
-  topic: string;
-  subject: string;
-  level: string;
+  quizInfo: QuizInfoData;
   content: string;
   outline: string;
   onComplete?: (answer: QuizQuestionUserAnswerData) => void;
 }
 
 export const GenerateQuestion: React.FC<GetQuestionProps> = ({
-  topic,
-  subject,
-  level,
+  quizInfo,
   content,
   outline,
   onComplete,
@@ -44,11 +41,7 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
 
   const { data: questionResponse } = api.quiz.generateQuestion.useQuery(
     {
-      info: {
-        topic: topic,
-        subject: subject,
-        level: level,
-      },
+      info: quizInfo,
       content: content,
       outline: outline,
       history: [],
@@ -100,18 +93,14 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
 
       if (questionData) {
         validateAnswer({
-          info: {
-            topic,
-            subject,
-            level,
-          },
+          info: quizInfo,
           content,
           question: questionData,
           answer,
         });
       }
     },
-    [validateAnswer, topic, subject, level, content, questionData],
+    [validateAnswer, content, questionData, quizInfo],
   );
 
   // Handle the validation of the answer

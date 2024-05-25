@@ -4,15 +4,11 @@
 import React, { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 
+import type { QuizInfoData } from "~/types";
+
 interface QuizContextProps {
-  topic: string;
-  setTopic: (topic: string) => void;
-  subject: string;
-  setSubject: (subject: string) => void;
-  level: string;
-  setLevel: (level: string) => void;
-  length: string;
-  setLength: (length: string) => void;
+  quizInfo: QuizInfoData | null;
+  setQuizInfo: (quizInfo: QuizInfoData) => void;
   contentSummary: string | null;
   setContentSummary: (outline: string | null) => void;
 }
@@ -22,23 +18,14 @@ const QuizContext = createContext<QuizContextProps | undefined>(undefined);
 export const QuizProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [topic, setTopic] = useState<string>("");
-  const [subject, setSubject] = useState<string>("");
-  const [level, setLevel] = useState<string>("");
-  const [length, setLength] = useState<string>("");
+  const [quizInfo, setQuizInfo] = useState<QuizInfoData | null>(null);
   const [contentSummary, setContentSummary] = useState<string | null>(null);
 
   return (
     <QuizContext.Provider
       value={{
-        topic,
-        setTopic,
-        subject,
-        setSubject,
-        level,
-        setLevel,
-        length,
-        setLength,
+        quizInfo: quizInfo,
+        setQuizInfo: setQuizInfo,
         contentSummary: contentSummary,
         setContentSummary: setContentSummary,
       }}

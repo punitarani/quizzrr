@@ -1,7 +1,7 @@
 // src/components/QuizInputForm.tsx
 
 import React from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Button } from "~/components/ui/button";
-import { Label } from "~/components/ui/label";
 import {
   Form,
   FormControl,
@@ -27,6 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
+import { QuizInfoSchema } from "~/types";
 
 const formSchema = z.object({
   topic: z.string().min(1, "Topic is required"),
@@ -36,6 +36,13 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+if (
+  JSON.stringify(Object.keys(formSchema.shape)) !==
+  JSON.stringify(Object.keys(QuizInfoSchema.shape))
+) {
+  throw new Error("FormData and QuizInfoData must have the exact same fields");
+}
 
 interface QuizInputFormProps {
   onSubmit: SubmitHandler<FormData>;

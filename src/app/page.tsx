@@ -6,18 +6,10 @@ import { GetOutline } from "~/app/_components/get-outline";
 import { QuizRunner } from "~/app/_components/get-quiz-runner";
 import { useQuizContext } from "~/context/QuizContext";
 import QuizInputForm from "~/components/QuizInputForm";
+import { QuizInfoData } from "~/types";
 
 const Page: React.FC = () => {
-  const {
-    topic,
-    setTopic,
-    subject,
-    setSubject,
-    level,
-    setLevel,
-    length,
-    setLength,
-  } = useQuizContext();
+  const { quizInfo, setQuizInfo } = useQuizContext();
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [showSummary, setshowSummary] = useState<boolean>(false);
   const [contentSummary, setContentSummary] = useState<string | null>(null);
@@ -25,16 +17,8 @@ const Page: React.FC = () => {
   const [quizOutline, setQuizOutline] = useState<string | null>(null);
   const [runQuiz, setRunQuiz] = useState<boolean>(false);
 
-  const handleFormSubmit = (data: {
-    topic: string;
-    subject: string;
-    level: string;
-    length: string;
-  }) => {
-    setTopic(data.topic);
-    setSubject(data.subject);
-    setLevel(data.level);
-    setLength(data.length);
+  const handleFormSubmit = (data: QuizInfoData) => {
+    setQuizInfo(data);
     setshowSummary(true);
     setFormSubmitted(true);
   };
@@ -55,36 +39,27 @@ const Page: React.FC = () => {
     <div className="flex min-h-screen flex-col items-center justify-start px-5 pt-20 md:px-20">
       <QuizInputForm onSubmit={handleFormSubmit} isDisabled={formSubmitted} />
       <div className="mt-4 w-full max-w-xl lg:max-w-3xl">
-        {showSummary && (
-          <GetSummary
-            topic={topic}
-            subject={subject}
-            level={level}
-            length={length}
-            onComplete={handleSummaryComplete}
-          />
+        {quizInfo && showSummary && (
+          <GetSummary quizInfo={quizInfo} onComplete={handleSummaryComplete} />
         )}
-        {showOutline && contentSummary != null && (
+        {quizInfo && showOutline && contentSummary != null && (
           <GetOutline
-            topic={topic}
-            subject={subject}
-            level={level}
-            length={length}
+            quizInfo={quizInfo}
             content={contentSummary}
             onComplete={handleOutlineComplete}
           />
         )}
-        {runQuiz && contentSummary != null && quizOutline != null && (
-          <QuizRunner
-            topic={topic}
-            subject={subject}
-            level={level}
-            length={length}
-            content={contentSummary}
-            outline={quizOutline}
-            onComplete={handleQuizComplete}
-          />
-        )}
+        {quizInfo &&
+          runQuiz &&
+          contentSummary != null &&
+          quizOutline != null && (
+            <QuizRunner
+              quizInfo={quizInfo}
+              content={contentSummary}
+              outline={quizOutline}
+              onComplete={handleQuizComplete}
+            />
+          )}
       </div>
     </div>
   );
