@@ -7,7 +7,7 @@ import type { QuizAnswerData, QuizQuestionAnswerData } from "~/types";
 
 interface QuizQuestionProps {
   data: QuizQuestionAnswerData | null;
-  isValidating: boolean;
+  validated: boolean;
   validation?: QuizAnswerData | null;
   onSubmit: (data: QuizQuestionAnswerData, submittedAnswer: string) => void;
   onAnswer: (data: QuizQuestionAnswerData) => void;
@@ -15,7 +15,7 @@ interface QuizQuestionProps {
 
 const QuizQuestion: React.FC<QuizQuestionProps> = ({
   data,
-  isValidating,
+  validated,
   validation,
   onSubmit,
   onAnswer,
@@ -59,12 +59,12 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   );
 
   useEffect((): void => {
-    if (!done.current && submitted && !isValidating && validation && qa) {
+    if (!done.current && submitted && !validated && validation && qa) {
       console.log(
         "submitted",
         submitted,
         "isValidating",
-        isValidating,
+        validated,
         "validation",
         validation,
       );
@@ -75,7 +75,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
       setQA(updatedQA);
       done.current = true;
     }
-  }, [isValidating, submitted, qa, setQA, validation]);
+  }, [validated, submitted, qa, setQA, validation]);
 
   useEffect((): void => {
     if (
@@ -132,7 +132,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
               }}
               onKeyDown={handleKeyDown}
             />
-            {(!submitted || (submitted && isValidating)) && (
+            {(!submitted || (submitted && validated)) && (
               <Button
                 type="submit"
                 className="mt-2"
@@ -142,18 +142,18 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
               </Button>
             )}
           </form>
-          {submitted && qa?.answer?.isCorrect !== null && (
-              <div
-                className={`mt-4 rounded-md p-2 ${
-                  qa?.answer?.isCorrect
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                <p>{qa?.answer?.feedback}</p>
-              </div>
-            )}
-          {submitted && isValidating && (
+          {submitted && validated && qa?.answer?.isCorrect !== null && (
+            <div
+              className={`mt-4 rounded-md p-2 ${
+                qa?.answer?.isCorrect
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              <p>{qa?.answer?.feedback}</p>
+            </div>
+          )}
+          {submitted && validated && (
             <div className="mt-4">
               <p className="text-sm text-gray-500">Validating answer...</p>
             </div>

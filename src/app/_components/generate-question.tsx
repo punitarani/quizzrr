@@ -109,7 +109,7 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
     <QuizQuestion
       data={questionAnswer}
       validation={answerData}
-      isValidating={!validationComplete}
+      validated={!validationComplete}
       onSubmit={onSubmitCallback}
       onAnswer={onAnswerCallback}
     />
