@@ -1,20 +1,21 @@
 // src/server/api/routers/quiz.ts
 
-import { generateText } from "ai";
+import { generateObject, generateText } from "ai";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
-import { llama3_70b } from "~/lib/llm";
+import { llama3_8b } from "~/lib/llm";
 import {
   type QuizAnswerData,
   type QuizInfoData,
   type QuizQuestionData,
-  type QuizQuestionUserAnswerData,
+  type QuizQuestionAnswerData,
   QuizInfoSchema,
   QuizQuestionSchema,
-  QuizQuestionUserAnswerSchema,
+  QuizQuestionAnswerSchema,
 } from "~/types";
+import { formatQuizQAData } from "~/lib/utils";
 
 async function generateContentSummary(quizInfo: QuizInfoData) {
   const systemPrompt =
@@ -40,7 +41,7 @@ async function generateContentSummary(quizInfo: QuizInfoData) {
     `Level: ${quizInfo.level}\n`;
 
   const { text } = await generateText({
-    model: llama3_70b,
+    model: llama3_8b,
     temperature: 0.2,
     system: systemPrompt,
     prompt: userPrompt,
@@ -102,7 +103,7 @@ async function generateQuizOutline(
     `Content Summary:\n${summary}`;
 
   const { text } = await generateText({
-    model: llama3_70b,
+    model: llama3_8b,
     temperature: 0.2,
     system: systemPrompt,
     prompt: userPrompt,
@@ -115,13 +116,60 @@ async function generateQuestion(
   info: QuizInfoData,
   content: string,
   outline: string,
-  history: QuizQuestionUserAnswerData[],
+  history: QuizQuestionAnswerData[],
 ): Promise<QuizQuestionData> {
-  return {
-    question: "Guess 0 or 1",
-    description: "50% chance of getting it right",
-    difficulty: "Medium",
-  };
+  const schema = z.object({
+    question: z.string(),
+    description: z.string(),
+    difficulty: z.string(),
+  });
+
+  const formattedHistory = formatQuizQAData(history, ["question", "answer"]);
+
+  const systemPrompt =
+    "You are an AI that generates quiz questions based on provided content, outline, and user history. " +
+    "Your task is to create a question that is relevant to the given topic, subject, and level.\n" +
+    "If the user has answered similar questions in the past, try to generate a new question. " +
+    "If the user answered the previous question incorrectly, generate a question one lever easier and lower to test the understanding. " +
+    "If the user answered the previous question correctly, generate a question one level harder and higher to challenge the knowledge.\n" +
+    "Ensure the question is clear, concise, and appropriately challenging. " +
+    "Do not include any extraneous information or examples.\n\n" +
+    "[BEGIN EXAMPLE 1]\n" +
+    "{\n" +
+    "  question: 'What is the primary function of the dendrites in a neuron?',\n" +
+    "  description: 'This question tests the understanding of the basic structure and function of neurons.',\n" +
+    "  difficulty: 'easy'\n" +
+    "}\n" +
+    "[END EXAMPLE 1]\n\n" +
+    "[BEGIN EXAMPLE 2]\n" +
+    "{\n" +
+    "  question: 'Explain the process of backpropagation in training neural networks.',\n" +
+    "  description: 'This question assesses the knowledge of the backpropagation algorithm used in neural network training.',\n" +
+    "  difficulty: 'medium'\n" +
+    "}\n" +
+    "[END EXAMPLE 2]";
+
+  const userPrompt =
+    `Generate the next question based on the quiz outline and history.\n` +
+    `Topic: ${info.topic}\n` +
+    `Subject: ${info.subject}\n` +
+    `Level: ${info.level}\n` +
+    `Length: ${info.length}\n\n (Short: 5-10 questions, Medium: 10-20 questions, Long: 20+ questions)` +
+    `Quiz Content:\n${content}\n\n` +
+    `Quiz Outline:\n${outline}\n\n` +
+    `Quiz History:\n${formattedHistory}\n\n`;
+
+  console.log("generateQuestion userPrompt", userPrompt);
+
+  const { object } = await generateObject({
+    model: llama3_8b,
+    temperature: 0.2,
+    system: systemPrompt,
+    prompt: userPrompt,
+    schema: schema,
+  });
+
+  return object;
 }
 
 async function validateAnswer(
@@ -130,24 +178,103 @@ async function validateAnswer(
   question: QuizQuestionData,
   answer: string,
 ): Promise<QuizAnswerData> {
-  const correctAnswer = Math.round(Math.random()).toString();
-  const isCorrect = answer == correctAnswer;
-  const feedback = `The correct answer is ${correctAnswer}.`;
+  const schema = z.object({
+    userAnswer: z.string(),
+    correctAnswer: z.string(),
+    isCorrect: z.boolean(),
+    feedback: z.string(),
+  });
 
-  return {
-    userAnswer: answer,
-    correctAnswer: correctAnswer,
-    isCorrect: isCorrect,
-    feedback: feedback,
-  };
+  const systemPrompt =
+    "You are an AI that validates quiz answers based on provided content and questions. " +
+    "Your task is to determine if the user's answer is correct, generate the correct answer, " +
+    "and provide feedback. Ensure the feedback is clear and concise.\n\n" +
+    "[BEGIN EXAMPLES]\n\n" +
+    "Example 1:\n" +
+    "{\n" +
+    "  userAnswer: 'Dendrites receive electrical signals from other neurons.',\n" +
+    "  correctAnswer: 'Dendrites receive electrical signals from other neurons.',\n" +
+    "  isCorrect: true,\n" +
+    "  feedback: 'Correct! Dendrites are responsible for receiving signals from other neurons.'\n" +
+    "}\n\n" +
+    "Example 2:\n" +
+    "{\n" +
+    "  userAnswer: 'Backpropagation is a type of neural network.',\n" +
+    "  correctAnswer: 'Backpropagation is an algorithm used for training neural networks.',\n" +
+    "  isCorrect: false,\n" +
+    "  feedback: 'Incorrect. Backpropagation is an algorithm used for training neural networks.'\n" +
+    "}\n\n" +
+    "[END EXAMPLES]";
+
+  const userPrompt =
+    `Validate if the given answer is correct for the given question.\n` +
+    `Generate the correct answer and provide feedback if it is correct or not.\n` +
+    `Topic: ${info.topic}\n` +
+    `Subject: ${info.subject}\n` +
+    `Level: ${info.level}\n` +
+    `Quiz Content:\n${content}\n\n` +
+    `Question:\n${question.question}\n\n` +
+    `Answer:\n${answer}\n\n`;
+
+  console.log("validateAnswer userPrompt", userPrompt);
+
+  const { object } = await generateObject({
+    model: llama3_8b,
+    temperature: 0.2,
+    system: systemPrompt,
+    prompt: userPrompt,
+    schema: schema,
+  });
+
+  return object;
 }
 
 async function checkCompletion(
   info: QuizInfoData,
   summary: string,
-  history: QuizQuestionUserAnswerData[],
+  history: QuizQuestionAnswerData[],
 ): Promise<boolean> {
-  return Math.random() < 0.2;
+  const schema = z.object({
+    complete: z.boolean(),
+  });
+
+  // Ensure the quiz has at least 3 questions answered
+  if (history.length < 3) {
+    return false;
+  }
+
+  const formattedHistory = formatQuizQAData(history, ["question", "answer"]);
+
+  const systemPrompt =
+    "You are an AI that checks if a quiz is complete based on the provided history. " +
+    "Your task is to determine if the quiz has covered all necessary topics and is complete. " +
+    "Do not include any extraneous information or examples.\n\n" +
+    "[BEGIN EXAMPLE]\n" +
+    "{\n" +
+    "  complete: true\n" +
+    "}\n" +
+    "[END EXAMPLE]";
+
+  const userPrompt =
+    `Check if the quiz is complete based on the provided history.\n` +
+    `Topic: ${info.topic}\n` +
+    `Subject: ${info.subject}\n` +
+    `Level: ${info.level}\n` +
+    `Length: ${info.length}\n\n (Short: 5-10 questions, Medium: 10-20 questions, Long: 20+ questions)` +
+    `Quiz Content Summary:\n${summary}\n\n` +
+    `Quiz History:\n${formattedHistory}\n\n`;
+
+  console.log("checkCompletion userPrompt", userPrompt);
+
+  const { object } = await generateObject({
+    model: llama3_8b,
+    temperature: 0.2,
+    system: systemPrompt,
+    prompt: userPrompt,
+    schema: schema,
+  });
+
+  return object.complete;
 }
 
 export const quizRouter = createTRPCRouter({
@@ -183,7 +310,7 @@ export const quizRouter = createTRPCRouter({
         info: QuizInfoSchema,
         content: z.string(),
         outline: z.string(),
-        history: z.array(QuizQuestionUserAnswerSchema),
+        history: z.array(QuizQuestionAnswerSchema),
       }),
     )
     .query(async ({ input }): Promise<QuizQuestionData> => {
@@ -196,7 +323,7 @@ export const quizRouter = createTRPCRouter({
         info: QuizInfoData;
         content: string;
         outline: string;
-        history: QuizQuestionUserAnswerData[];
+        history: QuizQuestionAnswerData[];
       } = input;
       return await generateQuestion(info, content, outline, history);
     }),
@@ -230,7 +357,7 @@ export const quizRouter = createTRPCRouter({
       z.object({
         info: QuizInfoSchema,
         summary: z.string(),
-        history: z.array(QuizQuestionUserAnswerSchema),
+        history: z.array(QuizQuestionAnswerSchema),
       }),
     )
     .mutation(async ({ input }): Promise<boolean> => {
@@ -241,7 +368,7 @@ export const quizRouter = createTRPCRouter({
       }: {
         info: QuizInfoData;
         summary: string;
-        history: QuizQuestionUserAnswerData[];
+        history: QuizQuestionAnswerData[];
       } = input;
       return await checkCompletion(info, summary, history);
     }),

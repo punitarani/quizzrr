@@ -2,8 +2,9 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GenerateQuestion } from "~/app/_components/generate-question";
+import { useQuizContext } from "~/context/QuizContext";
 import { api } from "~/trpc/react";
-import type { QuizInfoData, QuizQuestionUserAnswerData } from "~/types";
+import type { QuizInfoData, QuizQuestionAnswerData } from "~/types";
 
 interface GetQuizRunnerProps {
   quizInfo: QuizInfoData;
@@ -23,12 +24,13 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
   outline,
   onComplete,
 }) => {
+  const { qaData, setQAData } = useQuizContext();
+
   const isInitialMount = useRef(true);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [score, setScore] = useState<number>(0);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
   const [questionIndex, setQuestionIndex] = useState<number>(0);
-  const [qaData, setQAData] = useState<QuizQuestionUserAnswerData[]>([]);
 
   // Handle the completion of the quiz
   const { mutate: checkCompletion } = api.quiz.checkCompletion.useMutation({
@@ -48,28 +50,46 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
     },
   });
 
-  // Handle the submission of an answer
-  const handleAnswerSubmit = useCallback(
-    (answer: QuizQuestionUserAnswerData) => {
-      setQAData((prevData) => [...prevData, answer]);
+  // Handle the generation of a question
+  const onQuestionCallback = useCallback(
+    (data: QuizQuestionAnswerData) => {
+      const updatedQAData: QuizQuestionAnswerData[] = [...qaData, data];
+      setQAData(updatedQAData);
+      console.log("onQuestionCallback", updatedQAData);
+    },
+    [qaData, setQAData],
+  );
 
-      console.log(`Correct: ${answer.isCorrect}`);
-      if (answer.isCorrect) {
+  // Handle the validation of an answer
+  const onAnswerCallback = useCallback(
+    (data: QuizQuestionAnswerData) => {
+      // Update the question data with the answer
+      const updatedQAData = qaData.map((question) =>
+        question.id === data.id
+          ? { ...question, answer: data.answer }
+          : question,
+      );
+      setQAData(updatedQAData);
+      console.log("onAnswerCallback", updatedQAData);
+
+      console.log(`Correct: ${data?.answer?.isCorrect}`);
+      if (data?.answer?.isCorrect) {
         setScore((prevScore) => prevScore + 1);
       }
 
       // Check if the quiz is completed
+      console.log("Checking completion", updatedQAData);
       checkCompletion({
         info: quizInfo,
         summary: content,
-        history: qaData,
+        history: updatedQAData,
       });
 
       setQuestionIndex((prevIndex) => {
         return prevIndex + 1;
       });
     },
-    [onComplete, score],
+    [checkCompletion, content, qaData, quizInfo, setQAData],
   );
 
   // Generate a new question
@@ -78,15 +98,13 @@ export const QuizRunner: React.FC<GetQuizRunnerProps> = ({
       id: questionIndex,
       question: (
         <GenerateQuestion
-          quizInfo={quizInfo}
-          content={content}
-          outline={outline}
-          onComplete={handleAnswerSubmit}
+          onQuestion={onQuestionCallback}
+          onAnswer={onAnswerCallback}
         />
       ),
     };
     setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
-  }, [content, outline, handleAnswerSubmit, questionIndex, quizInfo]);
+  }, [questionIndex, onQuestionCallback, onAnswerCallback]);
 
   // Generate the first question on initial mount
   useEffect(() => {

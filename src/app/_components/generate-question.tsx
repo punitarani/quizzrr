@@ -2,70 +2,53 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import QuizQuestion from "~/components/QuizQuestion";
+import { useQuizContext } from "~/context/QuizContext";
 import { api } from "~/trpc/react";
-import type {
-  QuizInfoData,
-  QuizAnswerData,
-  QuizQuestionData,
-  QuizQuestionUserAnswerData,
-} from "~/types";
+import type { QuizAnswerData, QuizQuestionAnswerData } from "~/types";
+
+import { v4 as uuidv4 } from "uuid";
 
 interface GetQuestionProps {
-  quizInfo: QuizInfoData;
-  content: string;
-  outline: string;
-  onComplete?: (answer: QuizQuestionUserAnswerData) => void;
+  onQuestion: (data: QuizQuestionAnswerData) => void;
+  onAnswer: (data: QuizQuestionAnswerData) => void;
 }
 
 export const GenerateQuestion: React.FC<GetQuestionProps> = ({
-  quizInfo,
-  content,
-  outline,
-  onComplete,
+  onQuestion,
+  onAnswer,
 }) => {
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const [question, setQuestion] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
-  const [difficulty, setDifficulty] = useState<string>("");
-  const [userAnswer, setUserAnswer] = useState<string>("");
-  const [correctAnswer, setCorrectAnswer] = useState<boolean | null>(null);
-  const [feedback, setFeedback] = useState<string>("");
+  const { quizInfo, summary, outline, qaData } = useQuizContext();
+  if (quizInfo === null || summary === null || outline === null) {
+    throw new Error("Quiz context has null values");
+  }
+
+  const [questionAnswer, setQuestionAnswer] =
+    useState<QuizQuestionAnswerData | null>(null);
   const [answerData, setAnswerData] = useState<QuizAnswerData | null>(null);
   const [validationComplete, setValidationComplete] = useState(false);
 
-  const [questionData, setQuestionData] = useState<QuizQuestionData | null>(
-    null,
-  );
-  const [userAnswerData, setUserAnswerData] =
-    useState<QuizQuestionUserAnswerData | null>(null);
-
-  const { data: questionResponse } = api.quiz.generateQuestion.useQuery(
-    {
-      info: quizInfo,
-      content: content,
-      outline: outline,
-      history: [],
-    },
-    {
-      enabled: true,
-    },
-  );
+  const { data: questionResponse, refetch: fetchQuestion } =
+    api.quiz.generateQuestion.useQuery(
+      {
+        info: quizInfo,
+        content: summary,
+        outline: outline,
+        history: qaData,
+      },
+      {
+        enabled: false,
+      },
+    );
 
   const { mutate: validateAnswer } = api.quiz.validateAnswer.useMutation({
     onSuccess: (data) => {
-      setCorrectAnswer(data.isCorrect);
-      setFeedback(data.feedback);
       setAnswerData(data);
       setValidationComplete(true);
-      if (onComplete) {
-        onComplete({
-          question: question,
-          description: description,
-          userAnswer: userAnswer,
-          correctAnswer: data.correctAnswer,
-          isCorrect: data.isCorrect,
-          feedback: data.feedback,
-        });
+      if (onAnswer && questionAnswer) {
+        setQuestionAnswer((prevQAData) =>
+          prevQAData ? { ...prevQAData, answer: data } : null,
+        );
+        onAnswer(questionAnswer);
       }
     },
     onError: (error) => {
@@ -73,13 +56,21 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
     },
   });
 
-  // Set the question and description when the response is received
+  // Fetch the question when the component mounts
+  useEffect(() => {
+    if (questionAnswer === null) {
+      fetchQuestion().then(r => r).catch(e => console.error(e));
+    }
+  }, [fetchQuestion, questionAnswer]);
+
+  // Set the question data when it is generated
   useEffect(() => {
     if (questionResponse) {
-      setQuestion(questionResponse.question);
-      setDescription(questionResponse.description);
-      setDifficulty(questionResponse.difficulty);
-      setQuestionData(questionResponse);
+      setQuestionAnswer({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+        id: uuidv4(),
+        question: questionResponse,
+      });
     } else {
       // TODO: Handle error
     }
@@ -87,34 +78,34 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
 
   // Handle the submission of an answer
   const onSubmitCallback = useCallback(
-    (question: string, answer: string, description: string): void => {
-      setSubmitted(true);
-      setUserAnswer(answer);
-
-      if (questionData) {
+    (data: QuizQuestionAnswerData, submittedAnswer: string): void => {
+      if (questionAnswer) {
         validateAnswer({
           info: quizInfo,
-          content,
-          question: questionData,
-          answer,
+          content: summary,
+          question: data.question,
+          answer: submittedAnswer,
         });
       }
     },
-    [validateAnswer, content, questionData, quizInfo],
+    [questionAnswer, quizInfo, summary, validateAnswer],
   );
 
+  // Handle the generation of the question
+  useEffect(() => {
+    if (questionAnswer) {
+      onQuestion(questionAnswer);
+    }
+  }, [questionAnswer, onQuestion]);
+
   // Handle the validation of the answer
-  const onAnswerCallback = useCallback(
-    (answerData: QuizQuestionUserAnswerData): void => {
-      setUserAnswerData(answerData);
-    },
-    [],
-  );
+  const onAnswerCallback = useCallback((data: QuizQuestionAnswerData): void => {
+    setQuestionAnswer(data);
+  }, []);
 
   return (
     <QuizQuestion
-      question={question}
-      description={description}
+      data={questionAnswer}
       validation={answerData}
       isValidating={!validationComplete}
       onSubmit={onSubmitCallback}

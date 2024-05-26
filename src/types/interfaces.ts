@@ -36,3 +36,10 @@ export const QuizQuestionUserAnswerSchema = z.object({
 export type QuizQuestionUserAnswerData = z.infer<
   typeof QuizQuestionUserAnswerSchema
 >;
+
+export const QuizQuestionAnswerSchema = z.object({
+  id: z.string(),
+  question: QuizQuestionSchema,
+  answer: QuizAnswerSchema.optional(),
+});
+export type QuizQuestionAnswerData = z.infer<typeof QuizQuestionAnswerSchema>;

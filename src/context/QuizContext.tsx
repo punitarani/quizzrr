@@ -1,10 +1,10 @@
 // src/context/QuizContext.tsx
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
+import React, { createContext, useContext, useState } from "react";
 
-import type { QuizInfoData } from "~/types";
+import type { QuizInfoData, QuizQuestionAnswerData } from "~/types";
 
 interface QuizContextProps {
   quizInfo: QuizInfoData | null;
@@ -15,6 +15,8 @@ interface QuizContextProps {
   setOutline: (outline: string | null) => void;
   score: number;
   setScore: (score: number) => void;
+  qaData: QuizQuestionAnswerData[];
+  setQAData: (qaData: QuizQuestionAnswerData[]) => void;
 }
 
 const QuizContext = createContext<QuizContextProps | undefined>(undefined);
@@ -26,6 +28,7 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({
   const [summary, setSummary] = useState<string | null>(null);
   const [outline, setOutline] = useState<string | null>(null);
   const [score, setScore] = useState<number>(0);
+  const [qaData, setQAData] = useState<QuizQuestionAnswerData[]>([]);
 
   return (
     <QuizContext.Provider
@@ -38,6 +41,8 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({
         setOutline: setOutline,
         score: score,
         setScore: setScore,
+        qaData: qaData,
+        setQAData: setQAData,
       }}
     >
       {children}
