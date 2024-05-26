@@ -142,9 +142,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
               </Button>
             )}
           </form>
-          {submitted &&
-            qa?.answer != undefined &&
-            qa.answer?.isCorrect !== null && (
+          {submitted && qa?.answer?.isCorrect !== null && (
               <div
                 className={`mt-4 rounded-md p-2 ${
                   qa?.answer?.isCorrect
