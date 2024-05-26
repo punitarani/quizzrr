@@ -6,7 +6,7 @@ import { GetOutline } from "~/app/_components/get-outline";
 import { QuizRunner } from "~/app/_components/get-quiz-runner";
 import { useQuizContext } from "~/context/QuizContext";
 import QuizInputForm from "~/components/QuizInputForm";
-import { QuizInfoData } from "~/types";
+import type { QuizInfoData } from "~/types";
 
 const Page: React.FC = () => {
   const { quizInfo, setQuizInfo } = useQuizContext();
@@ -16,6 +16,7 @@ const Page: React.FC = () => {
   const [showOutline, setShowOutline] = useState<boolean>(false);
   const [quizOutline, setQuizOutline] = useState<string | null>(null);
   const [runQuiz, setRunQuiz] = useState<boolean>(false);
+  const [score, setScore] = useState<number>(0);
 
   const handleFormSubmit = (data: QuizInfoData) => {
     setQuizInfo(data);
@@ -33,7 +34,9 @@ const Page: React.FC = () => {
     setRunQuiz(true);
   };
 
-  const handleQuizComplete = (score: number) => {};
+  const handleQuizComplete = (score: number) => {
+    setScore(score);
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-start px-5 pt-20 md:px-20">
