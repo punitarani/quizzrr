@@ -7,7 +7,7 @@ import type { QuizAnswerData, QuizQuestionAnswerData } from "~/types";
 
 interface QuizQuestionProps {
   data: QuizQuestionAnswerData | null;
-  validated: boolean;
+  isValidating: boolean;
   validation?: QuizAnswerData | null;
   onSubmit: (data: QuizQuestionAnswerData, submittedAnswer: string) => void;
   onAnswer: (data: QuizQuestionAnswerData) => void;
@@ -15,7 +15,7 @@ interface QuizQuestionProps {
 
 const QuizQuestion: React.FC<QuizQuestionProps> = ({
   data,
-  validated,
+  isValidating,
   validation,
   onSubmit,
   onAnswer,
@@ -59,12 +59,12 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   );
 
   useEffect((): void => {
-    if (!done.current && submitted && !validated && validation && qa) {
+    if (!done.current && submitted && !isValidating && validation && qa) {
       console.log(
         "submitted",
         submitted,
         "isValidating",
-        validated,
+        isValidating,
         "validation",
         validation,
       );
@@ -75,7 +75,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
       setQA(updatedQA);
       done.current = true;
     }
-  }, [validated, submitted, qa, setQA, validation]);
+  }, [isValidating, submitted, qa, setQA, validation]);
 
   useEffect((): void => {
     if (
@@ -132,7 +132,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
               }}
               onKeyDown={handleKeyDown}
             />
-            {(!submitted || (submitted && validated)) && (
+            {(!submitted || (submitted && isValidating)) && (
               <Button
                 type="submit"
                 className="mt-2"
@@ -142,7 +142,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
               </Button>
             )}
           </form>
-          {submitted && validated && qa?.answer?.isCorrect !== null && (
+          {submitted && !isValidating && qa?.answer?.isCorrect !== null && (
             <div
               className={`mt-4 rounded-md p-2 ${
                 qa?.answer?.isCorrect
@@ -153,7 +153,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
               <p>{qa?.answer?.feedback}</p>
             </div>
           )}
-          {submitted && validated && (
+          {submitted && isValidating && (
             <div className="mt-4">
               <p className="text-sm text-gray-500">Validating answer...</p>
             </div>
