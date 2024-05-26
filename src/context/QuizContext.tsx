@@ -9,8 +9,12 @@ import type { QuizInfoData } from "~/types";
 interface QuizContextProps {
   quizInfo: QuizInfoData | null;
   setQuizInfo: (quizInfo: QuizInfoData) => void;
-  contentSummary: string | null;
-  setContentSummary: (outline: string | null) => void;
+  summary: string | null;
+  setSummary: (outline: string | null) => void;
+  outline: string | null;
+  setOutline: (outline: string | null) => void;
+  score: number;
+  setScore: (score: number) => void;
 }
 
 const QuizContext = createContext<QuizContextProps | undefined>(undefined);
@@ -19,15 +23,21 @@ export const QuizProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [quizInfo, setQuizInfo] = useState<QuizInfoData | null>(null);
-  const [contentSummary, setContentSummary] = useState<string | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [outline, setOutline] = useState<string | null>(null);
+  const [score, setScore] = useState<number>(0);
 
   return (
     <QuizContext.Provider
       value={{
         quizInfo: quizInfo,
         setQuizInfo: setQuizInfo,
-        contentSummary: contentSummary,
-        setContentSummary: setContentSummary,
+        summary: summary,
+        setSummary: setSummary,
+        outline: outline,
+        setOutline: setOutline,
+        score: score,
+        setScore: setScore,
       }}
     >
       {children}

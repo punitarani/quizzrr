@@ -9,31 +9,41 @@ import QuizInputForm from "~/components/QuizInputForm";
 import type { QuizInfoData } from "~/types";
 
 const Page: React.FC = () => {
-  const { quizInfo, setQuizInfo } = useQuizContext();
+  const {
+    quizInfo,
+    setQuizInfo,
+    summary,
+    setSummary,
+    outline,
+    setOutline,
+    score,
+    setScore,
+  } = useQuizContext();
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [showSummary, setshowSummary] = useState<boolean>(false);
-  const [contentSummary, setContentSummary] = useState<string | null>(null);
   const [showOutline, setShowOutline] = useState<boolean>(false);
-  const [quizOutline, setQuizOutline] = useState<string | null>(null);
   const [runQuiz, setRunQuiz] = useState<boolean>(false);
-  const [score, setScore] = useState<number>(0);
 
+  // Handle the submission of the input form
   const handleFormSubmit = (data: QuizInfoData) => {
     setQuizInfo(data);
     setshowSummary(true);
     setFormSubmitted(true);
   };
 
+  // Handle the summary generation completion
   const handleSummaryComplete = (content: string) => {
-    setContentSummary(content);
+    setSummary(content);
     setShowOutline(true);
   };
 
+  // Handle the outline generation completion
   const handleOutlineComplete = (outline: string) => {
-    setQuizOutline(outline);
+    setOutline(outline);
     setRunQuiz(true);
   };
 
+  // Handle the quiz completion
   const handleQuizComplete = (score: number) => {
     setScore(score);
   };
@@ -45,24 +55,21 @@ const Page: React.FC = () => {
         {quizInfo && showSummary && (
           <GetSummary quizInfo={quizInfo} onComplete={handleSummaryComplete} />
         )}
-        {quizInfo && showOutline && contentSummary != null && (
+        {quizInfo && showOutline && summary != null && (
           <GetOutline
             quizInfo={quizInfo}
-            content={contentSummary}
+            content={summary}
             onComplete={handleOutlineComplete}
           />
         )}
-        {quizInfo &&
-          runQuiz &&
-          contentSummary != null &&
-          quizOutline != null && (
-            <QuizRunner
-              quizInfo={quizInfo}
-              content={contentSummary}
-              outline={quizOutline}
-              onComplete={handleQuizComplete}
-            />
-          )}
+        {quizInfo && runQuiz && summary != null && outline != null && (
+          <QuizRunner
+            quizInfo={quizInfo}
+            content={summary}
+            outline={outline}
+            onComplete={handleQuizComplete}
+          />
+        )}
       </div>
     </div>
   );
