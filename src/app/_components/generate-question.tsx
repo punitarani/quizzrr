@@ -59,7 +59,9 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
   // Fetch the question when the component mounts
   useEffect(() => {
     if (questionAnswer === null) {
-      fetchQuestion().then(r => r).catch(e => console.error(e));
+      fetchQuestion()
+        .then((r) => r)
+        .catch((e) => console.error(e));
     }
   }, [fetchQuestion, questionAnswer]);
 

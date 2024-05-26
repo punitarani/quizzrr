@@ -38,7 +38,8 @@ async function generateContentSummary(quizInfo: QuizInfoData) {
     `Generate a clear and concise content summary for the given quizInfo.\n` +
     `Topic: ${quizInfo.topic}\n` +
     `Subject: ${quizInfo.subject}\n` +
-    `Level: ${quizInfo.level}\n`;
+    `Level: ${quizInfo.level}\n` +
+    `Generate the response in markdown format using bullet points without any extra information.`;
 
   const { text } = await generateText({
     model: llama3_8b,
@@ -100,7 +101,8 @@ async function generateQuizOutline(
     `Subject: ${info.subject}\n` +
     `Level: ${info.level}\n` +
     `Length: ${info.length}\n\n` +
-    `Content Summary:\n${summary}`;
+    `Content Summary:\n${summary}` +
+    `Generate the response in markdown format using bullet points without any extra information.`;
 
   const { text } = await generateText({
     model: llama3_8b,
@@ -124,7 +126,7 @@ async function generateQuestion(
     difficulty: z.string(),
   });
 
-  const formattedHistory = formatQuizQAData(history, ["question", "answer"]);
+  const formattedHistory = formatQuizQAData(history, ["question"]);
 
   const systemPrompt =
     "You are an AI that generates quiz questions based on provided content, outline, and user history. " +
@@ -154,7 +156,7 @@ async function generateQuestion(
     `Topic: ${info.topic}\n` +
     `Subject: ${info.subject}\n` +
     `Level: ${info.level}\n` +
-    `Length: ${info.length}\n\n (Short: 5-10 questions, Medium: 10-20 questions, Long: 20+ questions)` +
+    `Length: ${info.length} (Short: 5-10 questions, Medium: 10-20 questions, Long: 20+ questions)\n\n` +
     `Quiz Content:\n${content}\n\n` +
     `Quiz Outline:\n${outline}\n\n` +
     `Quiz History:\n${formattedHistory}\n\n`;
@@ -249,18 +251,14 @@ async function checkCompletion(
     "You are an AI that checks if a quiz is complete based on the provided history. " +
     "Your task is to determine if the quiz has covered all necessary topics and is complete. " +
     "Do not include any extraneous information or examples.\n\n" +
-    "[BEGIN EXAMPLE]\n" +
-    "{\n" +
-    "  complete: true\n" +
-    "}\n" +
-    "[END EXAMPLE]";
+    "Return `true` if the quiz is complete based on the length and user's progress, otherwise return `false`.";
 
   const userPrompt =
     `Check if the quiz is complete based on the provided history.\n` +
     `Topic: ${info.topic}\n` +
     `Subject: ${info.subject}\n` +
     `Level: ${info.level}\n` +
-    `Length: ${info.length}\n\n (Short: 5-10 questions, Medium: 10-20 questions, Long: 20+ questions)` +
+    `Length: ${info.length} (Short: 5-10 questions, Medium: 10-20 questions, Long: 20+ questions)\n\n` +
     `Quiz Content Summary:\n${summary}\n\n` +
     `Quiz History:\n${formattedHistory}\n\n`;
 

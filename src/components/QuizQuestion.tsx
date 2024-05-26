@@ -1,6 +1,6 @@
 //src/components/QuizQuestion.tsx
 
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import type { QuizAnswerData, QuizQuestionAnswerData } from "~/types";
@@ -20,10 +20,16 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   onSubmit,
   onAnswer,
 }) => {
-  const [answer, setUserAnswer] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [correct, setCorrect] = useState<boolean | null>(null);
-  const [explanation, setExplanation] = useState("");
+  const [qa, setQA] = useState<QuizQuestionAnswerData | null>(null);
+  const [answer, setAnswer] = useState<string>("");
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const done = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (data && !qa) {
+      setQA(data);
+    }
+  }, [data]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent): void => {
@@ -53,36 +59,45 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   );
 
   useEffect((): void => {
-    console.log(
-      "submitted",
-      submitted,
-      "isValidating",
-      isValidating,
-      "validation",
-      validation,
-    );
-    if (submitted && !isValidating && validation) {
-      setCorrect(validation.isCorrect);
-      setExplanation(validation.feedback);
+    if (!done.current && submitted && !isValidating && validation && qa) {
+      console.log(
+        "submitted",
+        submitted,
+        "isValidating",
+        isValidating,
+        "validation",
+        validation,
+      );
+      const updatedQA: QuizQuestionAnswerData = {
+        ...qa,
+        answer: validation,
+      };
+      setQA(updatedQA);
+      done.current = true;
     }
-  }, [submitted, isValidating, validation]);
+  }, [isValidating, submitted, qa, setQA, validation]);
 
   useEffect((): void => {
-    console.log("submitted", submitted, "correct", correct);
-    if (submitted && data && correct !== null) {
+    if (
+      submitted &&
+      data &&
+      qa?.answer?.isCorrect !== null &&
+      qa?.answer?.isCorrect !== undefined
+    ) {
+      console.log("submitted", submitted, "correct", qa?.answer?.isCorrect);
       onAnswer(data);
     }
-  }, [correct, data, onAnswer, submitted]);
+  }, [data, onAnswer, qa?.answer?.isCorrect, submitted]);
 
   return (
     <div className="rounded-md border p-4">
-      {!data ? (
+      {!qa ? (
         <p>Generating question...</p>
       ) : (
         <>
-          <h2 className="text-lg font-semibold">{data.question.question}</h2>
-          {data.question.description && (
-            <p className="text-sm text-gray-600">{data.question.description}</p>
+          <h2 className="text-lg font-semibold">{qa.question.question}</h2>
+          {qa.question.description && (
+            <p className="text-sm text-gray-600">{qa.question.description}</p>
           )}
           <form
             onSubmit={handleSubmit}
@@ -92,14 +107,14 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
               placeholder="Your answer..."
               value={answer}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setUserAnswer(e.target.value)
+                setAnswer(e.target.value)
               }
               className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring ${
-                submitted && correct !== null
-                  ? correct
+                qa?.answer === undefined
+                  ? "border-gray-300 focus:border-blue-300"
+                  : qa?.answer?.isCorrect
                     ? "border-green-500"
                     : "border-red-500"
-                  : "border-gray-300 focus:border-blue-300"
               }`}
               disabled={submitted}
               rows={1}
@@ -127,17 +142,19 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
               </Button>
             )}
           </form>
-          {submitted && correct !== null && explanation && (
-            <div
-              className={`mt-4 rounded-md p-2 ${
-                correct
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              <p>{explanation}</p>
-            </div>
-          )}
+          {submitted &&
+            qa?.answer != undefined &&
+            qa.answer?.isCorrect !== null && (
+              <div
+                className={`mt-4 rounded-md p-2 ${
+                  qa?.answer?.isCorrect
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                <p>{qa?.answer?.feedback}</p>
+              </div>
+            )}
           {submitted && isValidating && (
             <div className="mt-4">
               <p className="text-sm text-gray-500">Validating answer...</p>
