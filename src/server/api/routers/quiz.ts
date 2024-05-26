@@ -17,7 +17,23 @@ import {
 } from "~/types";
 
 async function generateContentSummary(quizInfo: QuizInfoData) {
-  const prompt =
+  const systemPrompt =
+    "Generate a clear and concise content summary for the given quizInfo.\n" +
+    "It needs to only include the main topics without subtopics in logical order. " +
+    "Do not include any examples, explanations, title, and other details.\n\n" +
+    "[BEGIN EXAMPLE]\n\n" +
+    "user: ANNs\n" +
+    "assistant:\n" +
+    "* Introduction to ANNs\n" +
+    "* Types of ANNs\n" +
+    "* Components of ANNs\n" +
+    "* How ANNs Work\n" +
+    "* Training ANNs\n" +
+    "* Applications of ANNs\n\n" +
+    "[END EXAMPLE]\n\n" +
+    "Generate the response in pretty and simple markdown format using bullet points.";
+
+  const userPrompt =
     `Generate a clear and concise content summary for the given quizInfo.\n` +
     `Topic: ${quizInfo.topic}\n` +
     `Subject: ${quizInfo.subject}\n` +
@@ -25,23 +41,11 @@ async function generateContentSummary(quizInfo: QuizInfoData) {
 
   const { text } = await generateText({
     model: llama3_70b,
-    system:
-      "Generate a clear and concise content summary for the given quizInfo.\n" +
-      "It needs to only include the main topics without subtopics in logical order. " +
-      "Do not include any examples, explanations, title, and other details.\n\n" +
-      "[BEGIN EXAMPLE]\n\n" +
-      "user: ANNs\n" +
-      "assistant:\n" +
-      "* Introduction to ANNs\n" +
-      "* Types of ANNs\n" +
-      "* Components of ANNs\n" +
-      "* How ANNs Work\n" +
-      "* Training ANNs\n" +
-      "* Applications of ANNs\n\n" +
-      "[END EXAMPLE]\n\n" +
-      "Generate the response in pretty and simple markdown format using bullet points.",
-    prompt: prompt,
+    temperature: 0.2,
+    system: systemPrompt,
+    prompt: userPrompt,
   });
+
   return text;
 }
 
@@ -99,6 +103,7 @@ async function generateQuizOutline(
 
   const { text } = await generateText({
     model: llama3_70b,
+    temperature: 0.2,
     system: systemPrompt,
     prompt: userPrompt,
   });
