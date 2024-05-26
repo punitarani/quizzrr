@@ -16,16 +16,31 @@ import {
   QuizQuestionUserAnswerSchema,
 } from "~/types";
 
-async function generateContentSummary(topic: string) {
+async function generateContentSummary(quizInfo: QuizInfoData) {
+  const prompt =
+    `Generate a clear and concise content summary for the given quizInfo.\n` +
+    `Topic: ${quizInfo.topic}\n` +
+    `Subject: ${quizInfo.subject}\n` +
+    `Level: ${quizInfo.level}\n`;
+
   const { text } = await generateText({
     model: llama3_70b,
     system:
-      "Generate a clear and concise content summary for the given topic.\n" +
+      "Generate a clear and concise content summary for the given quizInfo.\n" +
       "It needs to only include the main topics without subtopics in logical order. " +
       "Do not include any examples, explanations, title, and other details.\n\n" +
-      "[BEGIN EXAMPLE]\n\nuser: ANNs\nassistant:\n* Introduction to ANNs\n* Types of ANNs\n* Components of ANNs\n* How ANNs Work\n* Training ANNs\n* Applications of ANNs\n\n[END EXAMPLE]\n\n" +
+      "[BEGIN EXAMPLE]\n\n" +
+      "user: ANNs\n" +
+      "assistant:\n" +
+      "* Introduction to ANNs\n" +
+      "* Types of ANNs\n" +
+      "* Components of ANNs\n" +
+      "* How ANNs Work\n" +
+      "* Training ANNs\n" +
+      "* Applications of ANNs\n\n" +
+      "[END EXAMPLE]\n\n" +
       "Generate the response in pretty and simple markdown format using bullet points.",
-    prompt: topic,
+    prompt: prompt,
   });
   return text;
 }
@@ -93,9 +108,13 @@ async function checkCompletion(
 
 export const quizRouter = createTRPCRouter({
   content: publicProcedure
-    .input(z.object({ topic: z.string() }))
-    .query(async ({ input }) => {
-      const content = await generateContentSummary(input.topic);
+    .input(
+      z.object({
+        info: QuizInfoSchema,
+      }),
+    )
+    .query(async ({ input }): Promise<{ content: string }> => {
+      const content = await generateContentSummary(input.info);
       return { content: content };
     }),
 
