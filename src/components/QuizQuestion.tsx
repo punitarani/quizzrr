@@ -29,7 +29,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
     if (data && !qa) {
       setQA(data);
     }
-  }, [data]);
+  }, [data, qa]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent): void => {
