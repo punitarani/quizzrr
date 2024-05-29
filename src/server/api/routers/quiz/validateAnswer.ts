@@ -1,10 +1,10 @@
 // src/server/api/routers/quiz/validateAnswer.ts
 
-import { generateObject } from "ai";
-import { z } from "zod";
+import { generateObject } from 'ai'
+import { z } from 'zod'
 
-import { llama3_8b } from "~/lib/llm";
-import type { QuizAnswerData, QuizInfoData, QuizQuestionData } from "~/types";
+import { llama3_8b } from '~/lib/llm'
+import type { QuizAnswerData, QuizInfoData, QuizQuestionData } from '~/types'
 
 export async function validateAnswer(
   info: QuizInfoData,
@@ -17,28 +17,28 @@ export async function validateAnswer(
     correctAnswer: z.string(),
     isCorrect: z.boolean(),
     feedback: z.string(),
-  });
+  })
 
   const systemPrompt =
-    "You are an AI that validates quiz answers based on provided content and questions. " +
+    'You are an AI that validates quiz answers based on provided content and questions. ' +
     "Your task is to determine if the user's answer is correct, generate the correct answer, " +
-    "and provide feedback. Ensure the feedback is clear and concise.\n\n" +
-    "[BEGIN EXAMPLES]\n\n" +
-    "Example 1:\n" +
-    "{\n" +
+    'and provide feedback. Ensure the feedback is clear and concise.\n\n' +
+    '[BEGIN EXAMPLES]\n\n' +
+    'Example 1:\n' +
+    '{\n' +
     "  userAnswer: 'Dendrites receive electrical signals from other neurons.',\n" +
     "  correctAnswer: 'Dendrites receive electrical signals from other neurons.',\n" +
-    "  isCorrect: true,\n" +
+    '  isCorrect: true,\n' +
     "  feedback: 'Correct! Dendrites are responsible for receiving signals from other neurons.'\n" +
-    "}\n\n" +
-    "Example 2:\n" +
-    "{\n" +
+    '}\n\n' +
+    'Example 2:\n' +
+    '{\n' +
     "  userAnswer: 'Backpropagation is a type of neural network.',\n" +
     "  correctAnswer: 'Backpropagation is an algorithm used for training neural networks.',\n" +
-    "  isCorrect: false,\n" +
+    '  isCorrect: false,\n' +
     "  feedback: 'Incorrect. Backpropagation is an algorithm used for training neural networks.'\n" +
-    "}\n\n" +
-    "[END EXAMPLES]";
+    '}\n\n' +
+    '[END EXAMPLES]'
 
   const userPrompt =
     `Validate if the given answer is correct for the given question.\n` +
@@ -48,9 +48,9 @@ export async function validateAnswer(
     `Level: ${info.level}\n` +
     `Quiz Content:\n${content}\n\n` +
     `Question:\n${question.question}\n\n` +
-    `Answer:\n${answer}\n\n`;
+    `Answer:\n${answer}\n\n`
 
-  console.log("validateAnswer userPrompt", userPrompt);
+  console.log('validateAnswer userPrompt', userPrompt)
 
   const { object } = await generateObject({
     model: llama3_8b,
@@ -58,7 +58,7 @@ export async function validateAnswer(
     system: systemPrompt,
     prompt: userPrompt,
     schema: schema,
-  });
+  })
 
-  return object;
+  return object
 }

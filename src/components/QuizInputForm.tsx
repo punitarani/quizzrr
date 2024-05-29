@@ -1,23 +1,15 @@
 // src/components/QuizInputForm.tsx
 
-import React from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { zodResolver } from '@hookform/resolvers/zod'
+import type React from 'react'
+import { type SubmitHandler, useForm } from 'react-hook-form'
+import * as z from 'zod'
+import { Button } from '~/components/ui/button'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "~/components/ui/collapsible";
-import { Input } from "~/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { Button } from "~/components/ui/button";
+} from '~/components/ui/collapsible'
 import {
   Form,
   FormControl,
@@ -25,57 +17,65 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "~/components/ui/form";
-import { QuizInfoSchema } from "~/types";
+} from '~/components/ui/form'
+import { Input } from '~/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
+import { QuizInfoSchema } from '~/types'
 
 const formSchema = z.object({
-  topic: z.string().min(1, "Topic is required"),
-  subject: z.string().min(1, "Subject is required"),
-  level: z.string().min(1, "Level is required"),
-  length: z.string().min(1, "Length is required"),
-});
+  topic: z.string().min(1, 'Topic is required'),
+  subject: z.string().min(1, 'Subject is required'),
+  level: z.string().min(1, 'Level is required'),
+  length: z.string().min(1, 'Length is required'),
+})
 
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof formSchema>
 
 if (
   JSON.stringify(Object.keys(formSchema.shape)) !==
   JSON.stringify(Object.keys(QuizInfoSchema.shape))
 ) {
-  throw new Error("FormData and QuizInfoData must have the exact same fields");
+  throw new Error('FormData and QuizInfoData must have the exact same fields')
 }
 
 interface QuizInputFormProps {
-  onSubmit: SubmitHandler<FormData>;
-  isDisabled: boolean;
+  onSubmit: SubmitHandler<FormData>
+  isDisabled: boolean
 }
 
 enum Subjects {
-  All = "All",
-  ComputerScience = "Computer Science",
-  Biology = "Biology",
-  Chemistry = "Chemistry",
-  Physics = "Physics",
-  Mathematics = "Mathematics",
-  History = "History",
-  Economics = "Economics",
-  SocialStudies = "Social Studies",
+  All = 'All',
+  ComputerScience = 'Computer Science',
+  Biology = 'Biology',
+  Chemistry = 'Chemistry',
+  Physics = 'Physics',
+  Mathematics = 'Mathematics',
+  History = 'History',
+  Economics = 'Economics',
+  SocialStudies = 'Social Studies',
 }
 
 enum Levels {
-  MiddleSchool = "Middle School",
-  HighSchool = "High School",
-  College = "College",
+  MiddleSchool = 'Middle School',
+  HighSchool = 'High School',
+  College = 'College',
 }
 
 enum Lengths {
-  Short = "Short",
-  Medium = "Medium",
-  Long = "Long",
+  Short = 'Short',
+  Medium = 'Medium',
+  Long = 'Long',
 }
 
-const subjectOptions = Object.values(Subjects);
-const levelOptions = Object.values(Levels);
-const lengthOptions = Object.values(Lengths);
+const subjectOptions = Object.values(Subjects)
+const levelOptions = Object.values(Levels)
+const lengthOptions = Object.values(Lengths)
 
 const QuizInputForm: React.FC<QuizInputFormProps> = ({
   onSubmit,
@@ -84,12 +84,12 @@ const QuizInputForm: React.FC<QuizInputFormProps> = ({
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      topic: "",
+      topic: '',
       subject: Subjects.All,
       level: Levels.HighSchool,
       length: Lengths.Medium,
     },
-  });
+  })
 
   return (
     <Form {...form}>
@@ -216,7 +216,7 @@ const QuizInputForm: React.FC<QuizInputFormProps> = ({
         </Button>
       </form>
     </Form>
-  );
-};
+  )
+}
 
-export default QuizInputForm;
+export default QuizInputForm

@@ -1,15 +1,15 @@
 // src/lib/utils.ts
 
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 import type {
   QuizAnswerData,
   QuizQuestionAnswerData,
   QuizQuestionData,
-} from "~/types";
+} from '~/types'
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
 export function formatQuizQAData(
@@ -20,13 +20,15 @@ export function formatQuizQAData(
     .map((entry) =>
       fields
         .map((field) => {
-          const value = (entry as Record<string, unknown>)[field];
-          if (typeof value === "object" && value !== null) {
-            return `${String(field)}: ${JSON.stringify(value, null, 2)}`;
+          const value = (entry as Record<string, unknown>)[field]
+          if (typeof value === 'object' && value !== null) {
+            return `${String(field)}: ${JSON.stringify(value, null, 2)}`
           }
-          return `${String(field)}: ${value !== undefined ? String(value) : "N/A"}`;
+          return `${String(field)}: ${
+            value !== undefined ? String(value) : 'N/A'
+          }`
         })
-        .join("\n"),
+        .join('\n'),
     )
-    .join("\n\n");
+    .join('\n\n')
 }

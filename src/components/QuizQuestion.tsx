@@ -1,16 +1,17 @@
 //src/components/QuizQuestion.tsx
 
-import React, { useCallback, useState, useEffect, useRef } from "react";
-import { Textarea } from "~/components/ui/textarea";
-import { Button } from "~/components/ui/button";
-import type { QuizAnswerData, QuizQuestionAnswerData } from "~/types";
+import type React from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Button } from '~/components/ui/button'
+import { Textarea } from '~/components/ui/textarea'
+import type { QuizAnswerData, QuizQuestionAnswerData } from '~/types'
 
 interface QuizQuestionProps {
-  data: QuizQuestionAnswerData | null;
-  isValidating: boolean;
-  validation?: QuizAnswerData | null;
-  onSubmit: (data: QuizQuestionAnswerData, submittedAnswer: string) => void;
-  onAnswer: (data: QuizQuestionAnswerData) => void;
+  data: QuizQuestionAnswerData | null
+  isValidating: boolean
+  validation?: QuizAnswerData | null
+  onSubmit: (data: QuizQuestionAnswerData, submittedAnswer: string) => void
+  onAnswer: (data: QuizQuestionAnswerData) => void
 }
 
 const QuizQuestion: React.FC<QuizQuestionProps> = ({
@@ -20,62 +21,62 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
   onSubmit,
   onAnswer,
 }) => {
-  const [qa, setQA] = useState<QuizQuestionAnswerData | null>(null);
-  const [answer, setAnswer] = useState<string>("");
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const done = useRef<boolean>(false);
+  const [qa, setQA] = useState<QuizQuestionAnswerData | null>(null)
+  const [answer, setAnswer] = useState<string>('')
+  const [submitted, setSubmitted] = useState<boolean>(false)
+  const done = useRef<boolean>(false)
 
   useEffect(() => {
     if (data && !qa) {
-      setQA(data);
+      setQA(data)
     }
-  }, [data, qa]);
+  }, [data, qa])
 
   const handleSubmit = useCallback(
     (e: React.FormEvent): void => {
-      e.preventDefault();
+      e.preventDefault()
 
       // Prevent submitting an empty answer
       if (!answer) {
-        return;
+        return
       }
 
       // Prevent submitting the same answer multiple times
       if (!submitted && data) {
-        setSubmitted(true);
-        onSubmit(data, answer);
+        setSubmitted(true)
+        onSubmit(data, answer)
       }
     },
     [answer, data, onSubmit, submitted],
-  );
+  )
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "Enter") {
-        handleSubmit(e);
+      if (e.ctrlKey && e.key === 'Enter') {
+        handleSubmit(e)
       }
     },
     [handleSubmit],
-  );
+  )
 
   useEffect((): void => {
     if (!done.current && submitted && !isValidating && validation && qa) {
       console.log(
-        "submitted",
+        'submitted',
         submitted,
-        "isValidating",
+        'isValidating',
         isValidating,
-        "validation",
+        'validation',
         validation,
-      );
+      )
       const updatedQA: QuizQuestionAnswerData = {
         ...qa,
         answer: validation,
-      };
-      setQA(updatedQA);
-      done.current = true;
+      }
+      setQA(updatedQA)
+      done.current = true
     }
-  }, [isValidating, submitted, qa, setQA, validation]);
+  }, [isValidating, submitted, qa, setQA, validation])
 
   useEffect((): void => {
     if (
@@ -84,10 +85,10 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
       qa?.answer?.isCorrect !== null &&
       qa?.answer?.isCorrect !== undefined
     ) {
-      console.log("submitted", submitted, "correct", qa?.answer?.isCorrect);
-      onAnswer(data);
+      console.log('submitted', submitted, 'correct', qa?.answer?.isCorrect)
+      onAnswer(data)
     }
-  }, [data, onAnswer, qa?.answer?.isCorrect, submitted]);
+  }, [data, onAnswer, qa?.answer?.isCorrect, submitted])
 
   return (
     <div className="rounded-md border p-4">
@@ -111,24 +112,24 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
               }
               className={`w-full rounded-md border px-3 py-2 focus:outline-none focus:ring ${
                 qa?.answer === undefined
-                  ? "border-gray-300 focus:border-blue-300"
+                  ? 'border-gray-300 focus:border-blue-300'
                   : qa?.answer?.isCorrect
-                    ? "border-green-500"
-                    : "border-red-500"
+                    ? 'border-green-500'
+                    : 'border-red-500'
               }`}
               disabled={submitted}
               rows={1}
               style={{
-                resize: "none",
-                overflow: "hidden",
-                height: "auto",
-                minHeight: "1.5em",
+                resize: 'none',
+                overflow: 'hidden',
+                height: 'auto',
+                minHeight: '1.5em',
               }}
               onInput={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                 const target: HTMLTextAreaElement =
-                  e.target as HTMLTextAreaElement;
-                target.style.height = "auto";
-                target.style.height = `${target.scrollHeight}px`;
+                  e.target as HTMLTextAreaElement
+                target.style.height = 'auto'
+                target.style.height = `${target.scrollHeight}px`
               }}
               onKeyDown={handleKeyDown}
             />
@@ -146,8 +147,8 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
             <div
               className={`mt-4 rounded-md p-2 ${
                 qa?.answer?.isCorrect
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-red-100 text-red-700'
               }`}
             >
               <p>{qa?.answer?.feedback}</p>
@@ -161,7 +162,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({
         </>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default QuizQuestion;
+export default QuizQuestion

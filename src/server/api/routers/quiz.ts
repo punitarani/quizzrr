@@ -1,23 +1,23 @@
 // src/server/api/routers/quiz.ts
 
-import { z } from "zod";
+import { z } from 'zod'
 
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from '~/server/api/trpc'
 import {
   type QuizAnswerData,
   type QuizInfoData,
-  type QuizQuestionData,
-  type QuizQuestionAnswerData,
   QuizInfoSchema,
-  QuizQuestionSchema,
+  type QuizQuestionAnswerData,
   QuizQuestionAnswerSchema,
-} from "~/types";
+  type QuizQuestionData,
+  QuizQuestionSchema,
+} from '~/types'
 
-import { checkCompletion } from "./quiz/checkCompletion";
-import { generateQuizOutline } from "./quiz/generateOutline";
-import { generateContentSummary } from "./quiz/generateSummary";
-import { generateQuestion } from "./quiz/generateQuestion";
-import { validateAnswer } from "./quiz/validateAnswer";
+import { checkCompletion } from './quiz/checkCompletion'
+import { generateQuizOutline } from './quiz/generateOutline'
+import { generateQuestion } from './quiz/generateQuestion'
+import { generateContentSummary } from './quiz/generateSummary'
+import { validateAnswer } from './quiz/validateAnswer'
 
 export const quizRouter = createTRPCRouter({
   content: publicProcedure
@@ -27,8 +27,8 @@ export const quizRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }): Promise<{ content: string }> => {
-      const content = await generateContentSummary(input.info);
-      return { content: content };
+      const content = await generateContentSummary(input.info)
+      return { content: content }
     }),
 
   outline: publicProcedure
@@ -42,8 +42,8 @@ export const quizRouter = createTRPCRouter({
       const outline = await generateQuizOutline(
         QuizInfoSchema.parse(input.info),
         input.summary,
-      );
-      return { outline: outline };
+      )
+      return { outline: outline }
     }),
 
   generateQuestion: publicProcedure
@@ -62,12 +62,12 @@ export const quizRouter = createTRPCRouter({
         outline,
         history,
       }: {
-        info: QuizInfoData;
-        content: string;
-        outline: string;
-        history: QuizQuestionAnswerData[];
-      } = input;
-      return await generateQuestion(info, content, outline, history);
+        info: QuizInfoData
+        content: string
+        outline: string
+        history: QuizQuestionAnswerData[]
+      } = input
+      return await generateQuestion(info, content, outline, history)
     }),
 
   validateAnswer: publicProcedure
@@ -86,12 +86,12 @@ export const quizRouter = createTRPCRouter({
         question,
         answer,
       }: {
-        info: QuizInfoData;
-        content: string;
-        question: QuizQuestionData;
-        answer: string;
-      } = input;
-      return await validateAnswer(info, content, question, answer);
+        info: QuizInfoData
+        content: string
+        question: QuizQuestionData
+        answer: string
+      } = input
+      return await validateAnswer(info, content, question, answer)
     }),
 
   checkCompletion: publicProcedure
@@ -108,10 +108,10 @@ export const quizRouter = createTRPCRouter({
         summary,
         history,
       }: {
-        info: QuizInfoData;
-        summary: string;
-        history: QuizQuestionAnswerData[];
-      } = input;
-      return await checkCompletion(info, summary, history);
+        info: QuizInfoData
+        summary: string
+        history: QuizQuestionAnswerData[]
+      } = input
+      return await checkCompletion(info, summary, history)
     }),
-});
+})

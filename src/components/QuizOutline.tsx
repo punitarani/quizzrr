@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { Progress } from "~/components/ui/progress";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import { AlertCircle } from 'lucide-react'
+import type React from 'react'
+import { useEffect, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "~/components/ui/accordion";
+} from '~/components/ui/accordion'
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
+import { Progress } from '~/components/ui/progress'
 
 interface QuizOutlineProps {
-  outline: string | null;
-  isLoading: boolean;
-  error: boolean;
+  outline: string | null
+  isLoading: boolean
+  error: boolean
 }
 
 const QuizOutline: React.FC<QuizOutlineProps> = ({
@@ -21,16 +22,16 @@ const QuizOutline: React.FC<QuizOutlineProps> = ({
   isLoading,
   error,
 }) => {
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
     if (isLoading) {
       const interval = setInterval(() => {
-        setProgress((prev) => prev + (100 - prev) * 0.05);
-      }, 10);
-      return () => clearInterval(interval);
+        setProgress((prev) => prev + (100 - prev) * 0.05)
+      }, 10)
+      return () => clearInterval(interval)
     }
-  }, [isLoading]);
+  }, [isLoading])
 
   if (isLoading) {
     return (
@@ -48,11 +49,11 @@ const QuizOutline: React.FC<QuizOutlineProps> = ({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-    );
+    )
   }
 
   if (error) {
-    console.error("Error generating quiz content summary");
+    console.error('Error generating quiz content summary')
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
@@ -61,7 +62,7 @@ const QuizOutline: React.FC<QuizOutlineProps> = ({
           Error generating quiz outline. Please try again later.
         </AlertDescription>
       </Alert>
-    );
+    )
   }
 
   return (
@@ -79,7 +80,7 @@ const QuizOutline: React.FC<QuizOutlineProps> = ({
         </AccordionContent>
       </AccordionItem>
     </Accordion>
-  );
-};
+  )
+}
 
-export default QuizOutline;
+export default QuizOutline

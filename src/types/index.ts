@@ -1,3 +1,3 @@
 // src/types/index.ts
 
-export * from "./interfaces";
+export * from './interfaces'

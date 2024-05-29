@@ -1,31 +1,32 @@
 // src/app/_components/generate-question.tsx
 
-import React, { useCallback, useEffect, useState } from "react";
-import QuizQuestion from "~/components/QuizQuestion";
-import { useQuizContext } from "~/context/QuizContext";
-import { api } from "~/trpc/react";
-import type { QuizAnswerData, QuizQuestionAnswerData } from "~/types";
+import type React from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import QuizQuestion from '~/components/QuizQuestion'
+import { useQuizContext } from '~/context/QuizContext'
+import { api } from '~/trpc/react'
+import type { QuizAnswerData, QuizQuestionAnswerData } from '~/types'
 
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid'
 
 interface GetQuestionProps {
-  onQuestion: (data: QuizQuestionAnswerData) => void;
-  onAnswer: (data: QuizQuestionAnswerData) => void;
+  onQuestion: (data: QuizQuestionAnswerData) => void
+  onAnswer: (data: QuizQuestionAnswerData) => void
 }
 
 export const GenerateQuestion: React.FC<GetQuestionProps> = ({
   onQuestion,
   onAnswer,
 }) => {
-  const { quizInfo, summary, outline, qaData } = useQuizContext();
+  const { quizInfo, summary, outline, qaData } = useQuizContext()
   if (quizInfo === null || summary === null || outline === null) {
-    throw new Error("Quiz context has null values");
+    throw new Error('Quiz context has null values')
   }
 
   const [questionAnswer, setQuestionAnswer] =
-    useState<QuizQuestionAnswerData | null>(null);
-  const [answerData, setAnswerData] = useState<QuizAnswerData | null>(null);
-  const [validationComplete, setValidationComplete] = useState(false);
+    useState<QuizQuestionAnswerData | null>(null)
+  const [answerData, setAnswerData] = useState<QuizAnswerData | null>(null)
+  const [validationComplete, setValidationComplete] = useState(false)
 
   const { data: questionResponse, refetch: fetchQuestion } =
     api.quiz.generateQuestion.useQuery(
@@ -38,32 +39,32 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
       {
         enabled: false,
       },
-    );
+    )
 
   const { mutate: validateAnswer } = api.quiz.validateAnswer.useMutation({
     onSuccess: (data) => {
-      setAnswerData(data);
-      setValidationComplete(true);
+      setAnswerData(data)
+      setValidationComplete(true)
       if (onAnswer && questionAnswer) {
         setQuestionAnswer((prevQAData) =>
           prevQAData ? { ...prevQAData, answer: data } : null,
-        );
-        onAnswer(questionAnswer);
+        )
+        onAnswer(questionAnswer)
       }
     },
     onError: (error) => {
-      console.error("Answer validation error", error);
+      console.error('Answer validation error', error)
     },
-  });
+  })
 
   // Fetch the question when the component mounts
   useEffect(() => {
     if (questionAnswer === null) {
       fetchQuestion()
         .then((r) => r)
-        .catch((e) => console.error(e));
+        .catch((e) => console.error(e))
     }
-  }, [fetchQuestion, questionAnswer]);
+  }, [fetchQuestion, questionAnswer])
 
   // Set the question data when it is generated
   useEffect(() => {
@@ -72,11 +73,11 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
         id: uuidv4(),
         question: questionResponse,
-      });
+      })
     } else {
       // TODO: Handle error
     }
-  }, [questionResponse]);
+  }, [questionResponse])
 
   // Handle the submission of an answer
   const onSubmitCallback = useCallback(
@@ -87,23 +88,23 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
           content: summary,
           question: data.question,
           answer: submittedAnswer,
-        });
+        })
       }
     },
     [questionAnswer, quizInfo, summary, validateAnswer],
-  );
+  )
 
   // Handle the generation of the question
   useEffect(() => {
     if (questionAnswer) {
-      onQuestion(questionAnswer);
+      onQuestion(questionAnswer)
     }
-  }, [questionAnswer, onQuestion]);
+  }, [questionAnswer, onQuestion])
 
   // Handle the validation of the answer
   const onAnswerCallback = useCallback((data: QuizQuestionAnswerData): void => {
-    setQuestionAnswer(data);
-  }, []);
+    setQuestionAnswer(data)
+  }, [])
 
   return (
     <QuizQuestion
@@ -113,5 +114,5 @@ export const GenerateQuestion: React.FC<GetQuestionProps> = ({
       onSubmit={onSubmitCallback}
       onAnswer={onAnswerCallback}
     />
-  );
-};
+  )
+}

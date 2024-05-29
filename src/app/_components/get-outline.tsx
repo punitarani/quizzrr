@@ -1,16 +1,17 @@
 // src/app/_components/get-outline.tsx
 
-"use client";
+'use client'
 
-import React, { useEffect, useState } from "react";
-import { api } from "~/trpc/react";
-import QuizOutline from "~/components/QuizOutline";
-import type { QuizInfoData } from "~/types";
+import type React from 'react'
+import { useEffect, useState } from 'react'
+import QuizOutline from '~/components/QuizOutline'
+import { api } from '~/trpc/react'
+import type { QuizInfoData } from '~/types'
 
 interface GetOutlineProps {
-  quizInfo: QuizInfoData;
-  content: string;
-  onComplete?: (outline: string) => void;
+  quizInfo: QuizInfoData
+  content: string
+  onComplete?: (outline: string) => void
 }
 
 export const GetOutline: React.FC<GetOutlineProps> = ({
@@ -18,23 +19,21 @@ export const GetOutline: React.FC<GetOutlineProps> = ({
   content,
   onComplete,
 }) => {
-  const [outline, setOutline] = useState<string | null>(null);
+  const [outline, setOutline] = useState<string | null>(null)
 
   const { data, error, isLoading } = api.quiz.outline.useQuery({
     info: quizInfo,
     summary: content,
-  });
+  })
 
   useEffect(() => {
     if (data) {
-      setOutline(data.outline);
+      setOutline(data.outline)
       if (onComplete) {
-        onComplete(data.outline);
+        onComplete(data.outline)
       }
     }
-  }, [data, onComplete]);
+  }, [data, onComplete])
 
-  return (
-    <QuizOutline outline={outline} isLoading={isLoading} error={!!error} />
-  );
-};
+  return <QuizOutline outline={outline} isLoading={isLoading} error={!!error} />
+}

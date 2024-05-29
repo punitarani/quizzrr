@@ -1,21 +1,22 @@
 // src/components/QuizContentSummary.tsx
 
-import React, { useState, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Progress } from "~/components/ui/progress";
+import { AlertCircle } from 'lucide-react'
+import type React from 'react'
+import { useEffect, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "~/components/ui/accordion";
+} from '~/components/ui/accordion'
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
+import { Progress } from '~/components/ui/progress'
 
 interface QuizContentSummaryProps {
-  summary: string | null;
-  isLoading: boolean;
-  error: boolean;
+  summary: string | null
+  isLoading: boolean
+  error: boolean
 }
 
 const QuizContentSummary: React.FC<QuizContentSummaryProps> = ({
@@ -23,16 +24,16 @@ const QuizContentSummary: React.FC<QuizContentSummaryProps> = ({
   isLoading,
   error,
 }) => {
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
     if (isLoading) {
       const interval = setInterval(() => {
-        setProgress((prev) => prev + (100 - prev) * 0.05);
-      }, 10);
-      return () => clearInterval(interval);
+        setProgress((prev) => prev + (100 - prev) * 0.05)
+      }, 10)
+      return () => clearInterval(interval)
     }
-  }, [isLoading]);
+  }, [isLoading])
 
   if (isLoading) {
     return (
@@ -50,11 +51,11 @@ const QuizContentSummary: React.FC<QuizContentSummaryProps> = ({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-    );
+    )
   }
 
   if (error) {
-    console.error("Error generating quiz content summary");
+    console.error('Error generating quiz content summary')
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
@@ -63,7 +64,7 @@ const QuizContentSummary: React.FC<QuizContentSummaryProps> = ({
           Error generating content summary. Please try again later.
         </AlertDescription>
       </Alert>
-    );
+    )
   }
 
   return (
@@ -81,7 +82,7 @@ const QuizContentSummary: React.FC<QuizContentSummaryProps> = ({
         </AccordionContent>
       </AccordionItem>
     </Accordion>
-  );
-};
+  )
+}
 
-export default QuizContentSummary;
+export default QuizContentSummary
