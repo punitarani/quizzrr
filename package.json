@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "next dev -p 3005",
     "lint": "biome lint .",
-    "start": "next start",
+    "start": "next start -p 3005",
     "format": "biome format . --write && biome check . --apply"
   },
   "dependencies": {
