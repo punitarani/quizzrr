@@ -29,6 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
+      <script src="https://accounts.google.com/gsi/client" async></script>
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
